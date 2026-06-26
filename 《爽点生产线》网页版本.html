@@ -1,0 +1,1426 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#171416" />
+  <meta name="description" content="爽点生产线：严格保留原论述逻辑、原图表与原页面顺序的动态数据网页" />
+  <title>爽点生产线｜原内容完整保留动态版</title>
+  <style>
+    :root {
+      --ink: #1d1a1c;
+      --ink-soft: #343033;
+      --paper: #f3eee7;
+      --paper-2: #e9dfd3;
+      --paper-3: #d7c9ba;
+      --red: #a5231c;
+      --red-dark: #581f21;
+      --red-soft: #c8786d;
+      --white: #fffdf9;
+      --muted: #766e69;
+      --line: rgba(37, 30, 30, .15);
+      --shadow: 0 22px 70px rgba(36, 21, 21, .14);
+      --radius: 26px;
+      --max: 1180px;
+      --header-h: 68px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; background: var(--ink); }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 14% 8%, rgba(165,35,28,.12), transparent 28%),
+        var(--paper);
+      font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", system-ui, -apple-system, sans-serif;
+      overflow-x: hidden;
+    }
+
+    button, a { font: inherit; }
+    button { border: 0; }
+    a { color: inherit; }
+    ::selection { background: var(--red); color: white; }
+
+    .noise {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      pointer-events: none;
+      opacity: .035;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.72' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.9'/%3E%3C/svg%3E");
+    }
+
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: var(--header-h);
+      z-index: 80;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(18px, 4vw, 56px);
+      color: var(--white);
+      background: rgba(24, 20, 22, .82);
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      transform: translateY(-105%);
+      transition: transform .45s ease;
+    }
+    .topbar.visible { transform: translateY(0); }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 800; letter-spacing: .08em; }
+    .brand-dot { width: 13px; height: 13px; border-radius: 50%; background: var(--red-soft); box-shadow: 0 0 0 7px rgba(200,120,109,.14); }
+    .top-progress { width: min(34vw, 320px); height: 3px; background: rgba(255,255,255,.12); border-radius: 999px; overflow: hidden; }
+    .top-progress > i { display: block; width: 0; height: 100%; background: linear-gradient(90deg, var(--red-soft), #fff0e5); transition: width .15s linear; }
+    .top-index { color: rgba(255,255,255,.62); font-size: 12px; letter-spacing: .1em; }
+
+    .side-nav {
+      position: fixed;
+      right: 22px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 70;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .35s ease;
+    }
+    .side-nav.visible { opacity: 1; pointer-events: auto; }
+    .side-nav a {
+      width: 10px;
+      height: 10px;
+      border: 1px solid rgba(40,30,30,.4);
+      border-radius: 99px;
+      background: rgba(255,255,255,.45);
+      transition: .25s ease;
+      position: relative;
+    }
+    .side-nav a.active { height: 28px; background: var(--red); border-color: var(--red); }
+    .side-nav a span {
+      position: absolute;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%) translateX(8px);
+      opacity: 0;
+      white-space: nowrap;
+      font-size: 12px;
+      background: var(--ink);
+      color: white;
+      padding: 6px 9px;
+      border-radius: 8px;
+      pointer-events: none;
+      transition: .2s ease;
+    }
+    .side-nav a:hover span { opacity: 1; transform: translateY(-50%) translateX(0); }
+
+    .section {
+      position: relative;
+      min-height: 100svh;
+      padding: calc(var(--header-h) + 46px) clamp(20px, 5vw, 72px) 72px;
+      display: grid;
+      align-items: center;
+      overflow: clip;
+    }
+    .section.compact { min-height: auto; padding-block: 110px; }
+    .section.dark { background: var(--ink); color: var(--white); }
+    .section.red { background: var(--red-dark); color: var(--white); }
+    .section.paper-deep { background: var(--paper-2); }
+    .section::before {
+      content: attr(data-no);
+      position: absolute;
+      right: clamp(18px, 5vw, 70px);
+      top: 94px;
+      font: 900 clamp(64px, 10vw, 150px)/.8 Georgia, serif;
+      color: currentColor;
+      opacity: .035;
+      letter-spacing: -.08em;
+      pointer-events: none;
+    }
+
+    .wrap { width: min(100%, var(--max)); margin: auto; position: relative; z-index: 2; }
+    .eyebrow { display: flex; align-items: center; gap: 10px; color: var(--red); font-size: 13px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; margin-bottom: 18px; }
+    .dark .eyebrow, .red .eyebrow { color: #f4a79c; }
+    .eyebrow::before { content: ""; width: 28px; height: 2px; background: currentColor; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { font-size: clamp(44px, 8vw, 108px); line-height: .94; letter-spacing: -.06em; margin-bottom: 26px; }
+    h2 { font-size: clamp(34px, 5vw, 68px); line-height: 1.05; letter-spacing: -.045em; margin-bottom: 22px; }
+    h3 { font-size: clamp(20px, 2.2vw, 28px); line-height: 1.2; }
+    .lead { max-width: 790px; font-size: clamp(17px, 2vw, 23px); line-height: 1.85; color: var(--ink-soft); }
+    .dark .lead, .red .lead { color: rgba(255,255,255,.74); }
+    .small-note { color: var(--muted); font-size: 13px; line-height: 1.75; }
+    .dark .small-note, .red .small-note { color: rgba(255,255,255,.5); }
+    .red-text { color: var(--red); }
+    .dark .red-text, .red .red-text { color: #f3a197; }
+
+    .hero {
+      background:
+        linear-gradient(90deg, rgba(20,16,18,.98), rgba(20,16,18,.82) 55%, rgba(90,26,28,.64)),
+        repeating-linear-gradient(90deg, transparent 0 54px, rgba(255,255,255,.025) 54px 55px),
+        var(--ink);
+      color: white;
+      padding-top: 70px;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      width: 52vw;
+      aspect-ratio: 1;
+      right: -15vw;
+      top: 9vh;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,.08);
+      box-shadow: 0 0 0 7vw rgba(255,255,255,.022), 0 0 0 14vw rgba(255,255,255,.016);
+      animation: slowSpin 22s linear infinite;
+    }
+    @keyframes slowSpin { to { transform: rotate(360deg); } }
+    .hero-grid { display: grid; grid-template-columns: 1.12fr .88fr; gap: clamp(30px, 5vw, 80px); align-items: center; }
+    .hero-kicker { font: 700 13px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; color: #e59a90; letter-spacing: .16em; margin-bottom: 25px; }
+    .hero h1 span { color: #de8a80; }
+    .hero-copy { max-width: 720px; font-size: clamp(17px, 1.6vw, 22px); line-height: 1.9; color: rgba(255,255,255,.72); }
+    .start-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      margin-top: 34px;
+      padding: 16px 22px;
+      border-radius: 999px;
+      background: var(--red);
+      color: white;
+      cursor: pointer;
+      font-weight: 800;
+      box-shadow: 0 14px 34px rgba(165,35,28,.36);
+      transition: .25s ease;
+    }
+    .start-btn:hover { transform: translateY(-3px); box-shadow: 0 20px 44px rgba(165,35,28,.45); }
+    .start-btn i { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: rgba(255,255,255,.15); font-style: normal; }
+
+    .film-panel {
+      position: relative;
+      min-height: 440px;
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 28px;
+      background: rgba(255,255,255,.035);
+      box-shadow: inset 0 0 80px rgba(0,0,0,.22);
+      overflow: hidden;
+      transform: rotate(2deg);
+    }
+    .film-strip { position: absolute; inset: 20px; border: 2px solid rgba(255,255,255,.13); border-radius: 18px; }
+    .film-holes { position: absolute; left: 10px; right: 10px; height: 22px; display: flex; justify-content: space-around; }
+    .film-holes.top { top: 10px; } .film-holes.bottom { bottom: 10px; }
+    .film-holes b { width: 24px; height: 12px; border-radius: 3px; background: rgba(255,255,255,.12); }
+    .pulse-line { position: absolute; left: 12%; right: 12%; top: 53%; height: 2px; background: rgba(255,255,255,.16); }
+    .pulse-line::after { content: ""; position: absolute; left: 0; top: -1px; height: 4px; width: 32%; background: #d5685e; box-shadow: 0 0 22px #d5685e; animation: scan 3.2s ease-in-out infinite; }
+    @keyframes scan { 0%,100%{transform:translateX(0)} 50%{transform:translateX(210%)} }
+    .film-words { position: absolute; inset: 62px 48px; display: grid; place-items: center; text-align: center; }
+    .film-words strong { font-size: clamp(42px, 6vw, 86px); letter-spacing: -.08em; line-height: .95; color: rgba(255,255,255,.92); }
+    .film-words em { display: block; margin-top: 16px; font-style: normal; color: #d9857b; font-size: 14px; letter-spacing: .22em; }
+
+    .two-col { display: grid; grid-template-columns: .86fr 1.14fr; gap: clamp(30px, 5vw, 80px); align-items: center; }
+    .two-col.reverse { grid-template-columns: 1.18fr .82fr; }
+    .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 34px; }
+    .stat-card { padding: 22px; border-radius: 20px; background: rgba(255,255,255,.62); border: 1px solid rgba(80,55,50,.10); box-shadow: 0 8px 24px rgba(56,35,35,.06); }
+    .dark .stat-card { background: rgba(255,255,255,.055); border-color: rgba(255,255,255,.09); }
+    .stat-card strong { display: block; font: 900 clamp(27px, 3vw, 44px)/1 Georgia, serif; color: var(--red); margin-bottom: 8px; }
+    .dark .stat-card strong { color: #e88f84; }
+    .stat-card span { font-size: 13px; color: var(--muted); }
+    .dark .stat-card span { color: rgba(255,255,255,.56); }
+
+    .chart-card {
+      position: relative;
+      min-height: 520px;
+      border-radius: var(--radius);
+      border: 1px solid rgba(59,40,39,.11);
+      background: rgba(255,253,249,.75);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .dark .chart-card, .red .chart-card { background: rgba(255,255,255,.055); border-color: rgba(255,255,255,.10); box-shadow: 0 25px 70px rgba(0,0,0,.28); }
+    .chart { width: 100%; height: 520px; }
+    .chart-fallback { padding: 30px; display: none; }
+    .chart-fallback table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .chart-fallback th, .chart-fallback td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: left; }
+    .chart-actions { position: absolute; right: 18px; top: 18px; z-index: 4; display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+    .pill-btn { padding: 9px 13px; border-radius: 999px; background: rgba(255,255,255,.78); color: var(--ink); border: 1px solid rgba(40,30,30,.12); cursor: pointer; font-size: 12px; font-weight: 800; transition: .2s ease; backdrop-filter: blur(8px); }
+    .pill-btn:hover, .pill-btn.active { background: var(--red); color: white; border-color: var(--red); }
+    .dark .pill-btn { background: rgba(20,16,18,.72); color: white; border-color: rgba(255,255,255,.12); }
+
+    .topic-callout { margin-top: 20px; display: inline-flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1px solid rgba(165,35,28,.2); background: rgba(165,35,28,.07); border-radius: 14px; color: var(--red-dark); font-size: 14px; }
+    .topic-callout b { color: var(--red); }
+    .source-line { margin-top: 15px; font-size: 12px; line-height: 1.75; color: var(--muted); }
+    .dark .source-line, .red .source-line { color: rgba(255,255,255,.5); }
+    .market-detail { transition: transform .25s ease, background .25s ease; }
+    .market-detail.flash { transform: translateY(-3px); background: rgba(165,35,28,.13); }
+
+    .sample-toolbar { display: flex; align-items: center; gap: 9px; margin: 28px 0 20px; flex-wrap: wrap; }
+    .sample-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 16px; }
+    .sample-card {
+      min-height: 260px;
+      padding: 22px;
+      border-radius: 22px;
+      background: var(--white);
+      border: 1px solid rgba(53,39,38,.11);
+      box-shadow: 0 10px 28px rgba(48,28,28,.07);
+      display: flex;
+      flex-direction: column;
+      transition: transform .25s ease, box-shadow .25s ease, opacity .25s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .sample-card::before { content: ""; position: absolute; inset: 0 0 auto; height: 4px; background: linear-gradient(90deg, var(--red-dark), var(--red-soft)); }
+    .sample-card:hover { transform: translateY(-6px); box-shadow: 0 20px 45px rgba(48,28,28,.14); }
+    .sample-card.hidden { display: none; }
+    .sample-index { color: var(--red); font: 800 12px/1 ui-monospace, monospace; letter-spacing: .12em; }
+    .sample-card h3 { margin: 18px 0 12px; font-size: 20px; }
+    .tags { display: flex; flex-wrap: wrap; gap: 7px; }
+    .tag { padding: 6px 9px; border-radius: 999px; background: #efe3d9; color: #6e302e; font-size: 11px; font-weight: 700; }
+    .sample-meta { margin-top: auto; padding-top: 20px; border-top: 1px dashed rgba(70,45,45,.14); display: flex; justify-content: space-between; align-items: end; gap: 10px; }
+    .sample-meta strong { font-size: 23px; color: var(--red-dark); }
+    .sample-meta span { color: var(--muted); font-size: 12px; }
+    .script-badge { position: absolute; top: 14px; right: 14px; padding: 6px 8px; border-radius: 8px; background: var(--red); color: white; font-size: 10px; font-weight: 800; }
+
+    .word-panel { border-radius: 28px; min-height: 600px; padding: 24px; background: linear-gradient(145deg, #211c1e, #151214); box-shadow: 0 30px 80px rgba(0,0,0,.28); position: relative; overflow: hidden; }
+    .word-panel::before { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 70% 20%, rgba(165,35,28,.22), transparent 35%); }
+    .word-toolbar { position: relative; z-index: 2; display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+    .word-cloud { position: relative; z-index: 2; min-height: 500px; display: flex; align-content: center; justify-content: center; align-items: center; flex-wrap: wrap; gap: 10px 16px; padding: 24px; }
+    .word {
+      appearance: none;
+      background: transparent;
+      color: rgba(255,255,255,.76);
+      cursor: pointer;
+      font-weight: 800;
+      line-height: 1;
+      padding: 5px;
+      transition: .22s ease;
+      text-shadow: 0 8px 24px rgba(0,0,0,.3);
+    }
+    .word:hover, .word.active { color: #ffb0a6; transform: scale(1.13) rotate(0deg) !important; }
+    .word.dim { opacity: .12; transform: scale(.94); }
+    .word-tip { position: absolute; z-index: 5; min-width: 170px; padding: 12px 14px; border-radius: 12px; background: rgba(255,253,249,.96); color: var(--ink); box-shadow: 0 16px 44px rgba(0,0,0,.24); pointer-events: none; opacity: 0; transform: translate(-50%, -110%); transition: opacity .15s ease; font-size: 12px; }
+    .word-tip b { display: block; color: var(--red); margin-bottom: 4px; font-size: 15px; }
+
+    .formula { display: inline-flex; align-items: center; gap: 10px; padding: 14px 18px; background: rgba(165,35,28,.08); border: 1px solid rgba(165,35,28,.18); border-radius: 15px; font-weight: 800; color: var(--red-dark); margin-top: 22px; }
+    .density-detail { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 18px; }
+    .detail-card { padding: 18px; background: rgba(255,255,255,.65); border-radius: 18px; border: 1px solid rgba(60,45,43,.10); }
+    .detail-card b { display: block; font-size: 14px; margin-bottom: 7px; }
+    .detail-card span { color: var(--muted); font-size: 13px; line-height: 1.65; }
+
+    .quote-ticker { margin-top: 24px; min-height: 92px; padding: 20px 22px; border-left: 4px solid var(--red); background: rgba(165,35,28,.06); border-radius: 0 18px 18px 0; font-size: 16px; line-height: 1.7; }
+    .quote-ticker small { display: block; color: var(--muted); margin-top: 8px; }
+
+    .flow-shell { position: relative; padding: 30px 0; }
+    .flow-track { position: absolute; left: 4%; right: 4%; top: 86px; height: 4px; border-radius: 99px; background: rgba(255,255,255,.12); overflow: hidden; }
+    .flow-track i { display: block; width: 0; height: 100%; background: linear-gradient(90deg, #cb5d53, #ffe2d6); transition: width .55s ease; }
+    .flow-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 12px; position: relative; z-index: 2; }
+    .flow-step { cursor: pointer; color: white; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.11); border-radius: 18px; padding: 20px 12px; min-height: 210px; text-align: center; transition: .25s ease; }
+    .flow-step:hover, .flow-step.active { background: rgba(165,35,28,.34); border-color: rgba(255,160,150,.52); transform: translateY(-8px); }
+    .flow-num { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; margin: 0 auto 20px; background: #332c2f; border: 2px solid rgba(255,255,255,.18); font: 900 16px/1 Georgia, serif; transition: .25s; }
+    .flow-step.active .flow-num { background: var(--red); box-shadow: 0 0 0 9px rgba(165,35,28,.2); }
+    .flow-step h3 { font-size: 16px; margin-bottom: 10px; }
+    .flow-step p { color: rgba(255,255,255,.57); font-size: 12px; line-height: 1.55; }
+    .flow-detail { max-width: 760px; margin: 26px auto 0; text-align: center; min-height: 100px; padding: 20px; border-radius: 18px; background: rgba(255,255,255,.055); color: rgba(255,255,255,.74); line-height: 1.8; }
+    .flow-detail b { color: #f3a096; }
+
+    .interview-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 32px; }
+    .interview-card { border-radius: 23px; padding: 26px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.11); min-height: 300px; position: relative; transition: .25s ease; }
+    .interview-card:hover { transform: translateY(-6px); background: rgba(255,255,255,.10); }
+    .interview-card .role { color: #f1a197; font-size: 12px; font-weight: 800; letter-spacing: .14em; }
+    .interview-card blockquote { margin: 26px 0 0; font-size: clamp(18px, 2vw, 25px); line-height: 1.65; font-weight: 700; }
+    .interview-card::after { content: "“"; position: absolute; right: 18px; bottom: -28px; font: 900 130px/1 Georgia, serif; opacity: .055; }
+
+    .cycle { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; align-items: stretch; margin-top: 40px; }
+    .cycle-node { padding: 24px 18px; border-radius: 20px; background: var(--white); border: 1px solid rgba(60,40,40,.10); text-align: center; position: relative; box-shadow: 0 10px 28px rgba(45,26,26,.06); }
+    .cycle-node:not(:last-child)::after { content: "→"; position: absolute; right: -17px; top: 50%; transform: translateY(-50%); z-index: 2; color: var(--red); font-size: 24px; font-weight: 900; }
+    .cycle-node b { display: block; font-size: 18px; margin-bottom: 9px; }
+    .cycle-node span { color: var(--muted); font-size: 13px; line-height: 1.6; }
+    .cycle-node.pulse { animation: nodePulse 2.8s ease-in-out infinite; animation-delay: calc(var(--d) * .35s); }
+    @keyframes nodePulse { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px); box-shadow: 0 16px 38px rgba(165,35,28,.14)} }
+
+    .labor-layout { display: grid; grid-template-columns: .95fr 1.05fr; gap: 26px; align-items: stretch; margin-top: 36px; }
+    .labor-stack { display: grid; gap: 15px; }
+    .labor-card { padding: 22px; border-radius: 18px; background: rgba(255,255,255,.7); border: 1px solid rgba(65,45,45,.11); }
+    .labor-card b { color: var(--red); }
+    .labor-card p { margin: 8px 0 0; color: var(--muted); line-height: 1.7; font-size: 14px; }
+    .big-quote { display: grid; place-items: center; text-align: center; padding: 40px; border-radius: 28px; background: var(--red-dark); color: white; box-shadow: var(--shadow); }
+    .big-quote p { font-size: clamp(25px, 3.6vw, 48px); line-height: 1.45; font-weight: 800; margin: 0; }
+    .big-quote small { display: block; margin-top: 22px; color: rgba(255,255,255,.56); }
+
+    .ai-flow { display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; align-items: center; margin-top: 42px; }
+    .ai-node { min-height: 150px; display: grid; place-items: center; text-align: center; padding: 20px; border-radius: 22px; background: rgba(255,255,255,.065); border: 1px solid rgba(255,255,255,.11); position: relative; }
+    .ai-node:not(:last-child)::after { content: "→"; position: absolute; right: -21px; color: #ef9b91; font-size: 25px; font-weight: 900; }
+    .ai-node b { display: block; font-size: 18px; margin-bottom: 8px; }
+    .ai-node span { font-size: 12px; color: rgba(255,255,255,.52); line-height: 1.6; }
+
+    .conclusion-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 38px; }
+    .conclusion-card { min-height: 290px; border-radius: 24px; padding: 28px; background: rgba(255,255,255,.74); border: 1px solid rgba(55,40,40,.10); box-shadow: 0 13px 36px rgba(40,25,25,.08); }
+    .conclusion-card .n { font: 900 46px/1 Georgia, serif; color: var(--red); opacity: .55; }
+    .conclusion-card h3 { margin-top: 34px; }
+    .conclusion-card p { color: var(--muted); line-height: 1.75; }
+    .final-line { margin-top: 48px; max-width: 900px; font-size: clamp(23px, 3.2vw, 42px); font-weight: 850; line-height: 1.45; }
+    .methods { margin-top: 50px; padding-top: 22px; border-top: 1px solid rgba(60,40,40,.13); display: flex; justify-content: space-between; gap: 30px; color: var(--muted); font-size: 12px; line-height: 1.7; }
+
+    .reveal { opacity: 0; transform: translateY(38px); transition: opacity .8s ease, transform .8s cubic-bezier(.2,.7,.2,1); }
+    .reveal.in { opacity: 1; transform: none; }
+    .delay-1 { transition-delay: .12s; }
+    .delay-2 { transition-delay: .24s; }
+    .delay-3 { transition-delay: .36s; }
+
+
+
+    /* ===== AI 爽点剧本实验室 ===== */
+    .ai-lab-section {
+      background:
+        radial-gradient(circle at 82% 16%, rgba(165,35,28,.30), transparent 32%),
+        radial-gradient(circle at 15% 86%, rgba(200,120,109,.12), transparent 28%),
+        var(--ink);
+    }
+    .ai-lab-intro { max-width: 880px; }
+    .ai-playground {
+      display: grid;
+      grid-template-columns: minmax(300px,.72fr) minmax(0,1.28fr);
+      gap: 22px;
+      align-items: stretch;
+      margin-top: 34px;
+    }
+    .ai-form-card,
+    .ai-output-card {
+      border-radius: 28px;
+      border: 1px solid rgba(255,255,255,.11);
+      background: rgba(255,255,255,.055);
+      box-shadow: 0 24px 70px rgba(0,0,0,.26);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+    .ai-form-card { padding: 26px; }
+    .ai-form-card h3 { margin-bottom: 8px; }
+    .ai-form-card > p { color: rgba(255,255,255,.55); font-size: 13px; line-height: 1.7; }
+    .ai-field { display: grid; gap: 9px; margin-top: 22px; }
+    .ai-field > span,
+    .ai-label { color: rgba(255,255,255,.73); font-size: 12px; font-weight: 800; letter-spacing: .06em; }
+    .ai-text-input,
+    .ai-select {
+      width: 100%;
+      min-height: 52px;
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 15px;
+      background: rgba(10,8,9,.36);
+      color: white;
+      outline: none;
+      padding: 0 15px;
+      font: inherit;
+      transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
+    }
+    .ai-text-input::placeholder { color: rgba(255,255,255,.34); }
+    .ai-text-input:focus,
+    .ai-select:focus {
+      border-color: rgba(244,167,156,.75);
+      background: rgba(10,8,9,.52);
+      box-shadow: 0 0 0 4px rgba(165,35,28,.20);
+    }
+    .ai-select option { background: #211c1e; color: white; }
+    .ai-presets { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 11px; }
+    .ai-preset {
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.68);
+      cursor: pointer;
+      font-size: 11px;
+      transition: .2s ease;
+    }
+    .ai-preset:hover { color: white; border-color: rgba(244,167,156,.52); background: rgba(165,35,28,.22); }
+    .ai-control-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
+    .ai-range-wrap {
+      min-height: 52px;
+      display: grid;
+      align-content: center;
+      padding: 7px 13px;
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 15px;
+      background: rgba(10,8,9,.36);
+    }
+    .ai-range-head { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: rgba(255,255,255,.58); }
+    .ai-range-head output { color: #f3a197; font-weight: 900; }
+    .ai-range { width: 100%; accent-color: var(--red-soft); margin-top: 5px; }
+    .ai-generate {
+      width: 100%;
+      min-height: 56px;
+      margin-top: 22px;
+      border-radius: 17px;
+      color: white;
+      background: linear-gradient(135deg, #a5231c, #ca4f43);
+      cursor: pointer;
+      font-weight: 900;
+      letter-spacing: .03em;
+      box-shadow: 0 16px 38px rgba(165,35,28,.34);
+      transition: transform .22s ease, box-shadow .22s ease, filter .22s ease;
+    }
+    .ai-generate:hover { transform: translateY(-3px); box-shadow: 0 22px 48px rgba(165,35,28,.45); filter: brightness(1.05); }
+    .ai-generate:disabled { opacity: .58; cursor: wait; transform: none; }
+    .ai-random-btn {
+      width: 100%;
+      margin-top: 10px;
+      padding: 11px;
+      border-radius: 14px;
+      background: transparent;
+      color: rgba(255,255,255,.62);
+      border: 1px solid rgba(255,255,255,.11);
+      cursor: pointer;
+      font-weight: 750;
+    }
+    .ai-random-btn:hover { color: white; background: rgba(255,255,255,.06); }
+    .ai-model-note {
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px dashed rgba(255,255,255,.12);
+      color: rgba(255,255,255,.42);
+      font-size: 11px;
+      line-height: 1.7;
+    }
+
+    .ai-output-card { min-height: 620px; overflow: hidden; display: flex; flex-direction: column; }
+    .ai-output-toolbar {
+      min-height: 62px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 0 20px;
+      border-bottom: 1px solid rgba(255,255,255,.09);
+      background: rgba(12,10,11,.27);
+    }
+    .ai-output-status { display: flex; align-items: center; gap: 10px; color: rgba(255,255,255,.65); font-size: 12px; font-weight: 800; }
+    .ai-status-dot { width: 9px; height: 9px; border-radius: 50%; background: #6d6468; box-shadow: 0 0 0 6px rgba(255,255,255,.04); }
+    .ai-status-dot.ready { background: #d7685d; box-shadow: 0 0 0 6px rgba(215,104,93,.12); }
+    .ai-output-actions { display: flex; gap: 7px; }
+    .ai-mini-btn {
+      padding: 8px 11px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,.11);
+      background: rgba(255,255,255,.055);
+      color: rgba(255,255,255,.65);
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .ai-mini-btn:hover { color: white; border-color: rgba(244,167,156,.38); }
+    .ai-mini-btn:disabled { opacity: .35; cursor: not-allowed; }
+    .ai-output-body { flex: 1; padding: 24px; overflow: auto; max-height: 760px; scrollbar-color: rgba(200,120,109,.55) transparent; }
+    .ai-output-empty { min-height: 505px; display: grid; place-items: center; text-align: center; color: rgba(255,255,255,.5); }
+    .ai-empty-visual { width: min(100%, 480px); }
+    .ai-empty-track { display: grid; grid-template-columns: repeat(6,1fr); gap: 7px; margin-bottom: 24px; align-items: end; }
+    .ai-empty-track i { display: block; height: 44px; border-radius: 10px; background: rgba(255,255,255,.055); border: 1px solid rgba(255,255,255,.08); animation: aiIdle 2.4s ease-in-out infinite; animation-delay: calc(var(--i) * .13s); }
+    .ai-empty-track i:nth-child(4) { background: rgba(165,35,28,.30); border-color: rgba(244,167,156,.23); }
+    @keyframes aiIdle { 0%,100%{transform:translateY(0);opacity:.65} 50%{transform:translateY(-9px);opacity:1} }
+    .ai-output-empty b { color: rgba(255,255,255,.88); font-size: 20px; display: block; margin-bottom: 10px; }
+    .ai-output-empty p { max-width: 500px; margin: auto; line-height: 1.75; font-size: 13px; }
+    .ai-thinking { min-height: 505px; display: none; place-items: center; text-align: center; color: rgba(255,255,255,.72); }
+    .ai-thinking.active { display: grid; }
+    .ai-thinking-line { width: 260px; height: 3px; margin: 18px auto 0; overflow: hidden; background: rgba(255,255,255,.08); border-radius: 999px; }
+    .ai-thinking-line i { display: block; width: 42%; height: 100%; background: linear-gradient(90deg, transparent, #e98f84, transparent); animation: aiScan 1.1s ease-in-out infinite; }
+    @keyframes aiScan { from{transform:translateX(-120%)} to{transform:translateX(330%)} }
+
+    .ai-result { display: none; }
+    .ai-result.show { display: block; animation: aiResultIn .5s ease both; }
+    @keyframes aiResultIn { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:none} }
+    .ai-result-kicker { color: #e99a90; font: 800 11px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .13em; }
+    .ai-result h3 { margin: 10px 0 12px; font-size: clamp(27px,3vw,42px); color: white; letter-spacing: -.035em; }
+    .ai-logline { color: rgba(255,255,255,.68); font-size: 15px; line-height: 1.8; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,.09); }
+    .ai-block { margin-top: 25px; }
+    .ai-block-title { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 13px; }
+    .ai-block-title b { color: white; font-size: 16px; }
+    .ai-block-title span { color: rgba(255,255,255,.4); font-size: 11px; }
+    .ai-beat-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 9px; }
+    .ai-beat {
+      min-height: 122px;
+      padding: 14px;
+      border-radius: 15px;
+      background: rgba(255,255,255,.055);
+      border: 1px solid rgba(255,255,255,.09);
+      position: relative;
+      overflow: hidden;
+    }
+    .ai-beat::before { content: attr(data-n); position: absolute; right: 8px; top: 4px; color: rgba(255,255,255,.04); font: 900 44px/1 Georgia,serif; }
+    .ai-beat.hot { background: rgba(165,35,28,.25); border-color: rgba(244,167,156,.28); }
+    .ai-beat b { color: #f1a197; display: block; font-size: 12px; margin-bottom: 8px; }
+    .ai-beat p { margin: 0; color: rgba(255,255,255,.66); font-size: 11px; line-height: 1.65; }
+    .ai-scene-list { display: grid; gap: 10px; }
+    .ai-scene {
+      padding: 16px 17px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.045);
+      border-left: 3px solid rgba(200,120,109,.72);
+    }
+    .ai-scene-head { display: flex; justify-content: space-between; gap: 15px; align-items: baseline; margin-bottom: 9px; }
+    .ai-scene-head b { color: white; font-size: 13px; }
+    .ai-scene-head span { color: #e99a90; font-size: 10px; font-weight: 800; }
+    .ai-scene p { color: rgba(255,255,255,.65); font-size: 12px; line-height: 1.78; margin: 0; white-space: pre-line; }
+    .ai-comment-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .ai-comment { padding: 9px 12px; border-radius: 999px; background: #f0dfd5; color: #592624; font-size: 11px; font-weight: 800; }
+    .ai-hook {
+      margin-top: 20px;
+      padding: 17px 18px;
+      border-radius: 17px;
+      background: linear-gradient(135deg, rgba(165,35,28,.35), rgba(255,255,255,.05));
+      border: 1px solid rgba(244,167,156,.20);
+      color: rgba(255,255,255,.75);
+      line-height: 1.75;
+      font-size: 13px;
+    }
+    .ai-hook b { color: #f3a197; }
+    .ai-result-disclaimer { margin-top: 18px; color: rgba(255,255,255,.34); font-size: 10px; line-height: 1.6; }
+
+    @media (max-width: 1024px) {
+      .ai-playground { grid-template-columns: 1fr; }
+      .ai-output-card { min-height: 560px; }
+      .ai-beat-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+    }
+    @media (max-width: 720px) {
+      .ai-form-card, .ai-output-card { border-radius: 20px; }
+      .ai-form-card { padding: 20px; }
+      .ai-control-grid { grid-template-columns: 1fr; }
+      .ai-output-body { padding: 18px; max-height: none; }
+      .ai-output-toolbar { padding: 0 14px; }
+      .ai-beat-grid { grid-template-columns: 1fr; }
+      .ai-output-actions { gap: 5px; }
+      .ai-mini-btn { padding: 7px 9px; }
+    }
+
+    @media (max-width: 1024px) {
+      .hero-grid, .two-col, .two-col.reverse, .labor-layout { grid-template-columns: 1fr; }
+      .film-panel { min-height: 360px; transform: rotate(0); }
+      .sample-grid { grid-template-columns: repeat(2, 1fr); }
+      .flow-grid { grid-template-columns: repeat(4, 1fr); }
+      .flow-track { display: none; }
+      .interview-grid { grid-template-columns: 1fr; }
+      .cycle { grid-template-columns: repeat(2, 1fr); }
+      .cycle-node:nth-child(2)::after { display: none; }
+      .ai-flow { grid-template-columns: 1fr 1fr; }
+      .ai-node:not(:last-child)::after { display: none; }
+      .conclusion-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 720px) {
+      :root { --header-h: 58px; --radius: 20px; }
+      .section { padding: calc(var(--header-h) + 34px) 18px 62px; min-height: auto; }
+      .hero { min-height: 100svh; padding-top: 88px; }
+      .top-index { display: none; }
+      .top-progress { width: 42vw; }
+      .side-nav { display: none; }
+      .stat-row { grid-template-columns: 1fr 1fr; }
+      .stat-card:last-child { grid-column: 1 / -1; }
+      .chart-card { min-height: 430px; border-radius: 19px; }
+      .chart { height: 430px; }
+      .sample-grid { grid-template-columns: 1fr; }
+      .sample-card { min-height: 225px; }
+      .word-panel { min-height: 520px; padding: 16px; }
+      .word-cloud { min-height: 420px; padding: 10px; gap: 8px 12px; }
+      .density-detail { grid-template-columns: 1fr; }
+      .flow-grid { grid-template-columns: repeat(2, 1fr); }
+      .flow-step { min-height: 185px; }
+      .cycle { grid-template-columns: 1fr; }
+      .cycle-node::after { display: none !important; }
+      .ai-flow { grid-template-columns: 1fr; }
+      .methods { flex-direction: column; }
+      .chart-actions { left: 12px; right: 12px; top: 12px; justify-content: flex-end; }
+      .pill-btn { padding: 8px 10px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="noise"></div>
+  <header class="topbar" id="topbar">
+    <div class="brand"><span class="brand-dot"></span>爽点生产线</div>
+    <div class="top-progress"><i id="progressBar"></i></div>
+    <div class="top-index" id="topIndex">01 / 15</div>
+  </header>
+
+  <nav class="side-nav" id="sideNav" aria-label="页面章节导航"></nav>
+
+  <main>
+    <section class="section hero" id="s1" data-no="01" data-title="封面">
+      <div class="wrap hero-grid">
+        <div>
+          <div class="hero-kicker reveal">DATA STORY · SHORT DRAMA · EMOTIONAL LABOR</div>
+          <h1 class="reveal delay-1">爽点<br><span>生产线</span></h1>
+          <p class="hero-copy reveal delay-2">短剧里的“逆袭打脸”是怎样被制造出来的？近几年，短剧以极快速度进入大众视野。它不靠长篇铺陈，而是用几分钟制造冲突、反转和情绪释放。我们想追问的是：短剧里最常见的“逆袭打脸”，到底是怎样被生产出来的？</p>
+          <button class="start-btn reveal delay-3" id="startBtn">开始进入生产线 <i>↓</i></button>
+        </div>
+        <div class="film-panel reveal delay-2" aria-hidden="true">
+          <div class="film-strip"></div>
+          <div class="film-holes top"><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b></div>
+          <div class="film-holes bottom"><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b></div>
+          <div class="pulse-line"></div>
+          <div class="film-words"><div><strong>受辱<br>反击<br>清算</strong><em>REPEAT · TEST · COPY</em></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section paper-deep" id="s2" data-no="02" data-title="短剧快速扩张">
+      <div class="wrap two-col">
+        <div>
+          <div class="eyebrow reveal">Industry background</div>
+          <h2 class="reveal delay-1">短剧，不只是<br><span class="red-text">“土味上头”</span></h2>
+          <p class="lead reveal delay-2">过去几年，短剧市场快速扩张，用户观看习惯被重新切割为更短、更密集、更即时的内容消费。在这种内容环境里，剧情不再慢慢展开，而是要在极短时间内完成：冲突、反转、爽点和留存。</p>
+          <div class="stat-row reveal delay-3">
+            <div class="stat-card"><strong data-count="9.4" data-decimals="1">0</strong><span>2020年市场规模（亿元）</span></div>
+            <div class="stat-card"><strong data-count="504.4" data-decimals="1">0</strong><span>2024年市场规模（亿元）</span></div>
+            <div class="stat-card"><strong data-count="53.7" data-decimals="1">0</strong><span>五年增长倍数</span></div>
+          </div>
+          <div class="topic-callout market-detail reveal delay-3" id="marketDetail"><b>2024年：</b>市场规模达到504.4亿元，同比增长34.90%。点击图中年份可查看对应数据。</div>
+          <p class="source-line reveal delay-3">数据来源：艾媒咨询相关行业统计；2020—2024年中国微短剧市场规模，单位为亿元。市场扩张推动短剧内容逐渐形成更成熟的生产与商业转化机制。</p>
+        </div>
+        <div class="chart-card reveal delay-2">
+          <div class="chart-actions"><button class="pill-btn" data-replay="topicChart">重新播放</button></div>
+          <div class="chart" id="topicChart"></div>
+          <div class="chart-fallback" data-for="topicChart"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="s3" data-no="03" data-title="为什么选逆袭打脸">
+      <div class="wrap two-col reverse">
+        <div class="chart-card reveal">
+          <div class="chart-actions"><button class="pill-btn" data-replay="rankChart">重新播放</button></div>
+          <div class="chart" id="rankChart"></div>
+          <div class="chart-fallback" data-for="rankChart"></div>
+        </div>
+        <div>
+          <div class="eyebrow reveal">Topic selection</div>
+          <h2 class="reveal delay-1">从热度标签里，找到最稳定的<span class="red-text">爽点类型</span></h2>
+          <p class="lead reveal delay-2">在多个短剧热度标签中，“逆袭”“打脸”“虐渣”“复仇”“身份反转”等关键词反复出现，说明它们已经成为短剧吸引用户的重要情绪入口。</p>
+          <div class="topic-callout reveal delay-3"><b>研究对象：</b>逆袭排名第 1，打脸虐渣排名第 3</div>
+          <p class="small-note reveal delay-3" style="margin-top:18px">我们最终选择“逆袭打脸”，是因为它既高频，又具有清晰的情绪结构：先让观众憋屈，再让主角反击，最后完成解气。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section compact paper-deep" id="s4" data-no="04" data-title="研究样本">
+      <div class="wrap">
+        <div class="eyebrow reveal">Research samples</div>
+        <h2 class="reveal delay-1">我们研究了哪些剧？</h2>
+        <p class="lead reveal delay-2">我们选取了多部具有“逆袭打脸”特征的短剧，并结合平台热度、剧本拆解和评论数据进行交叉分析。八部作品用于观察类型与热度，其中五部完整剧本进入词频、类别与密度统计。</p>
+        <div class="sample-toolbar reveal delay-2">
+          <button class="pill-btn active" data-filter="all">全部 8 部</button>
+          <button class="pill-btn" data-filter="script">五部剧本样本</button>
+          <button class="pill-btn" data-filter="extended">扩展热度样本</button>
+        </div>
+        <div class="sample-grid" id="sampleGrid"></div>
+      </div>
+    </section>
+
+    <section class="section dark" id="s5" data-no="05" data-title="剧本高频词">
+      <div class="wrap two-col">
+        <div>
+          <div class="eyebrow reveal">Text mining</div>
+          <h2 class="reveal delay-1">剧本里，爽点被<span class="red-text">反复写出来</span></h2>
+          <p class="lead reveal delay-2">高频词显示，逆袭打脸类短剧并不是随机制造冲突，而是反复调用一组固定元素：身份反转、能力碾压、复仇清算、强势反击和情感补偿。</p>
+          <p class="small-note reveal delay-3">点击下方类别按钮筛选词汇；悬停或点击具体词语，可查看它在五部剧本中的命中次数与所属类别。</p>
+        </div>
+        <div class="word-panel reveal delay-2">
+          <div class="word-toolbar" id="wordToolbar"></div>
+          <div class="word-cloud" id="wordCloud"></div>
+          <div class="word-tip" id="wordTip"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="s6" data-no="06" data-title="爽点类别">
+      <div class="wrap two-col reverse">
+        <div class="chart-card reveal">
+          <div class="chart-actions">
+            <button class="pill-btn active" data-mode="category" data-value="donut">环形图</button>
+            <button class="pill-btn" data-mode="category" data-value="bar">条形图</button>
+            <button class="pill-btn" data-replay="categoryChart">重新播放</button>
+          </div>
+          <div class="chart" id="categoryChart"></div>
+          <div class="chart-fallback" data-for="categoryChart"></div>
+        </div>
+        <div>
+          <div class="eyebrow reveal">Structure</div>
+          <h2 class="reveal delay-1">爽点不是一种，<br>而是一组<span class="red-text">配方</span></h2>
+          <p class="lead reveal delay-2">逆袭打脸并不是一个单一桥段，而是一套组合配方。它通常需要先有受辱铺垫，再通过身份、能力、证据或权力完成反转，最后让反派受到惩罚。</p>
+          <div class="quote-ticker reveal delay-3" id="categoryTicker">身份反转在五部剧本中出现 715 次，占全部爽点词的 27.1%。<small>点击图表中的类别查看解释。</small></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section paper-deep" id="s7" data-no="07" data-title="爽点密度">
+      <div class="wrap two-col">
+        <div>
+          <div class="eyebrow reveal">Density</div>
+          <h2 class="reveal delay-1">每 1000 字里，<br>短剧塞进了多少个<span class="red-text">爽点</span>？</h2>
+          <p class="lead reveal delay-2">我们把“爽”变成一个可以比较的指标。密度越高，说明剧情越倾向于用高频冲突、反击和反转维持观看快感。</p>
+          <div class="formula reveal delay-3">爽点密度 = 爽点关键词出现次数 ÷ 剧本文本总字数 × 1000</div>
+          <div class="density-detail reveal delay-3" id="densityDetail">
+            <div class="detail-card"><b>当前最高</b><span>《夫人她专治不服》：13.02 次 / 千字</span></div>
+            <div class="detail-card"><b>五部平均</b><span>9.65 次 / 千字</span></div>
+          </div>
+        </div>
+        <div class="chart-card reveal delay-2">
+          <div class="chart-actions"><button class="pill-btn" data-replay="densityChart">重新播放</button></div>
+          <div class="chart" id="densityChart"></div>
+          <div class="chart-fallback" data-for="densityChart"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="s8" data-no="08" data-title="观众反馈">
+      <div class="wrap two-col reverse">
+        <div class="chart-card reveal">
+          <div class="chart-actions">
+            <button class="pill-btn active" data-mode="sentiment" data-value="rose">情绪环图</button>
+            <button class="pill-btn" data-mode="sentiment" data-value="bar">比例条形图</button>
+            <button class="pill-btn" data-replay="sentimentChart">重新播放</button>
+          </div>
+          <div class="chart" id="sentimentChart"></div>
+          <div class="chart-fallback" data-for="sentimentChart"></div>
+        </div>
+        <div>
+          <div class="eyebrow reveal">Audience feedback</div>
+          <h2 class="reveal delay-1">评论区给出了答案：<span class="red-text">爽、解气、过瘾</span></h2>
+          <p class="lead reveal delay-2">评论情绪中，“爽/解气”占据最突出位置。这说明观众并不是只在评价剧情好坏，而是在表达一种情绪释放：终于反击了，终于不憋屈了，坏人终于遭报应了。</p>
+          <div class="quote-ticker reveal delay-3" id="commentTicker">“打脸来的好快，容遇面前，纪止渊也只能盘着。”<small>代表性评论 · 爽/解气</small></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section dark" id="s9" data-no="09" data-title="爽点生产线">
+      <div class="wrap">
+        <div class="eyebrow reveal">Core model</div>
+        <h2 class="reveal delay-1">一条“解气”，是这样被<span class="red-text">生产出来</span>的</h2>
+        <p class="lead reveal delay-2">短剧里的“爽”不是直接写出来的，而是先制造“不爽”，再集中释放“解气”。点击任一节点查看具体机制，生产线也会自动循环演示。</p>
+        <div class="flow-shell reveal delay-3">
+          <div class="flow-track"><i id="flowProgress"></i></div>
+          <div class="flow-grid" id="flowGrid"></div>
+          <div class="flow-detail" id="flowDetail"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section red" id="s10" data-no="10" data-title="从业者怎么看">
+      <div class="wrap">
+        <div class="eyebrow reveal">Creator perspective</div>
+        <h2 class="reveal delay-1">从剧本到后台：创作者也在描述同一条生产线</h2>
+        <p class="lead reveal delay-2">已有访谈与整理材料显示，创作者并不是单纯凭灵感写爽点，而是在平台数据、商业要求和用户反馈之间不断调整剧情节奏。</p>
+        <div class="interview-grid reveal delay-3">
+          <article class="interview-card"><div class="role">个人创作者视角</div><blockquote>“爽点抓住了人的好奇心、反差感和情绪需求，让用户产生还想继续看的欲望。”</blockquote></article>
+          <article class="interview-card"><div class="role">平台化创作观察</div><blockquote>“有时候不是不知道它俗，而是这一集必须让观众爽一下，下一集必须留一个钩子。”</blockquote></article>
+          <article class="interview-card"><div class="role">商业接单视角</div><blockquote>“甲方买的不是你的表达欲，而是一个能跑通的爽点模板。”</blockquote></article>
+        </div>
+        <p class="small-note" style="margin-top:22px">方法提示：页面沿用项目已有访谈整理内容；正式提交时，请按课程规范区分已完成采访与用于预演、论述补充的模拟材料。</p>
+      </div>
+    </section>
+
+    <section class="section" id="s11" data-no="11" data-title="数据改写剧情">
+      <div class="wrap">
+        <div class="eyebrow reveal">Data calibration</div>
+        <h2 class="reveal delay-1">数据不只是评价结果，<br>也在反过来<span class="red-text">改写剧情</span></h2>
+        <p class="lead reveal delay-2">如果前期反馈不好，身份反转可能会被提前，小打脸节点会被加入前几集。这说明平台数据不仅衡量短剧效果，也参与塑造短剧结构。</p>
+        <div class="cycle reveal delay-3">
+          <div class="cycle-node pulse" style="--d:0"><b>剧本初稿</b><span>冲突、反转、身份曝光被预先排列</span></div>
+          <div class="cycle-node pulse" style="--d:1"><b>数据反馈</b><span>留存、完播、评论与热度暴露节奏问题</span></div>
+          <div class="cycle-node pulse" style="--d:2"><b>改稿校准</b><span>增加小打脸、强化反击、压缩铺垫</span></div>
+          <div class="cycle-node pulse" style="--d:3"><b>爽点提前</b><span>身份反转从第六集提前到第三集</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section paper-deep" id="s12" data-no="12" data-title="编剧的情绪劳动">
+      <div class="wrap">
+        <div class="eyebrow reveal">Emotional labor</div>
+        <h2 class="reveal delay-1">编剧的工作：把老套桥段写得像<span class="red-text">第一次发生</span></h2>
+        <p class="lead reveal delay-2">短剧编剧不仅是在写故事，也是在持续排列观众的委屈、愤怒、期待和解气。即使创作者知道某些桥段老套，只要数据好、甲方要、平台认，就仍然会继续生产。</p>
+        <div class="labor-layout reveal delay-3">
+          <div class="labor-stack">
+            <div class="labor-card"><b>生产</b><p>把受辱、挑衅、反击、清算排列成可预测的情绪链条。</p></div>
+            <div class="labor-card"><b>调节</b><p>根据用户反馈调整爽点位置、强度和出现频率。</p></div>
+            <div class="labor-card"><b>管理</b><p>让观众在憋屈与释放之间保持追更欲望和停留时间。</p></div>
+          </div>
+          <div class="big-quote"><div><p>“最累的不是写不出来，而是要把自己觉得老套的东西，写得像第一次发生一样。”</p><small>访谈整理中的代表性表述</small></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section dark" id="s13" data-no="13" data-title="AI与标准化">
+      <div class="wrap">
+        <div class="eyebrow reveal">AI extension</div>
+        <h2 class="reveal delay-1">AI 会让爽点生产更快，<br>也可能<span class="red-text">更像</span></h2>
+        <p class="lead reveal delay-2">AI已经可以参与标题、梗概、分镜、反转点和桥段生成。它提高了生产效率，也可能让“逆袭打脸”套路更标准化、更相似。</p>
+        <div class="ai-flow reveal delay-3">
+          <div class="ai-node"><div><b>AI 工具</b><span>提示词、模型与短剧生成平台</span></div></div>
+          <div class="ai-node"><div><b>标题 / 梗概</b><span>快速生成题材包装与故事入口</span></div></div>
+          <div class="ai-node"><div><b>分镜 / 节奏</b><span>拆解集数、冲突和钩子位置</span></div></div>
+          <div class="ai-node"><div><b>反转点</b><span>补充身份曝光、证据清算和打脸节点</span></div></div>
+          <div class="ai-node"><div><b>标准化桥段</b><span>同一套情绪结构被更快复制</span></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section compact" id="s14" data-no="14" data-title="结论">
+      <div class="wrap">
+        <div class="eyebrow reveal">Conclusion</div>
+        <h2 class="reveal delay-1">逆袭打脸的本质：<br><span class="red-text">先制造不爽，再集中释放解气</span></h2>
+        <div class="conclusion-grid reveal delay-2">
+          <article class="conclusion-card"><div class="n">01</div><h3>稳定的情绪结构</h3><p>受辱铺垫、隐藏优势、冲突升级、爽点爆发、反转清算与情感补偿，共同构成一套可识别、可重复的结构。</p></article>
+          <article class="conclusion-card"><div class="n">02</div><h3>爽点被数据化、流程化</h3><p>高频词、类别占比、单位文本密度和评论情绪，让“爽”从模糊感受变成可以计算、比较和校准的指标。</p></article>
+          <article class="conclusion-card"><div class="n">03</div><h3>创作者承担情绪生产劳动</h3><p>编剧生产的不只是剧情，也在持续制造、调整和管理观众的委屈、期待与解气，并被平台数据推向下一轮复制。</p></article>
+        </div>
+        <p class="final-line reveal delay-3">短剧里的“爽”并不是凭空产生的。它是一种被设计、被测试、被复制的情绪产品。</p>
+        <div class="methods reveal delay-3"><div>数据口径：五部完整剧本清洗文本共 279,818 字，爽点关键词命中 2,643 次；评论主情绪样本 200 条；热度页沿用项目已有 2025 年题材热度数据。</div><div>页面用途：课程展示动态网页。支持手机浏览、电脑演示、iframe 嵌入与图表重新播放。</div></div>
+      </div>
+    </section>
+
+
+    <section class="section dark ai-lab-section" id="s15" data-no="15" data-title="AI爽点生成器">
+      <div class="wrap">
+        <div class="ai-lab-intro">
+          <div class="eyebrow reveal">Interactive AI application</div>
+          <h2 class="reveal delay-1">把一个关键词，送进<span class="red-text">爽点生产线</span></h2>
+          <p class="lead reveal delay-2">输入一个关键词或短剧标题，生成器会依据本项目提炼出的“受辱铺垫—隐藏优势—冲突升级—爽点爆发—反转清算—情感补偿—评论反馈—循环钩子”结构，生成一段可视化短剧示例。</p>
+        </div>
+
+        <div class="ai-playground reveal delay-3">
+          <form class="ai-form-card" id="aiScriptForm">
+            <h3>AI 爽点剧本实验室</h3>
+            <p>一个词也可以，例如“实习生”；也可以直接输入标题，例如《离婚当天，我成了他的甲方》。</p>
+
+            <label class="ai-field">
+              <span>关键词或标题</span>
+              <input class="ai-text-input" id="aiPrompt" maxlength="80" autocomplete="off" placeholder="例如：被裁员的实习生" />
+            </label>
+
+            <div class="ai-presets" aria-label="灵感示例">
+              <button type="button" class="ai-preset" data-ai-preset="被裁员的实习生">被裁员的实习生</button>
+              <button type="button" class="ai-preset" data-ai-preset="假千金高考逆袭">假千金高考逆袭</button>
+              <button type="button" class="ai-preset" data-ai-preset="离婚当天继承百亿集团">离婚当天继承百亿集团</button>
+              <button type="button" class="ai-preset" data-ai-preset="底层保安觉醒异能">底层保安觉醒异能</button>
+            </div>
+
+            <div class="ai-control-grid">
+              <label class="ai-field" style="margin-top:0">
+                <span>叙事类型</span>
+                <select class="ai-select" id="aiGenre">
+                  <option value="auto">自动判断</option>
+                  <option value="workplace">职场商战</option>
+                  <option value="school">校园学霸</option>
+                  <option value="divorce">离婚逆袭</option>
+                  <option value="identity">豪门身份</option>
+                  <option value="power">异能崛起</option>
+                </select>
+              </label>
+
+              <label class="ai-field" style="margin-top:0">
+                <span>爽点强度</span>
+                <div class="ai-range-wrap">
+                  <div class="ai-range-head"><span>克制</span><output id="aiIntensityValue">4 / 5</output><span>连爆</span></div>
+                  <input class="ai-range" id="aiIntensity" type="range" min="1" max="5" value="4" />
+                </div>
+              </label>
+            </div>
+
+            <button class="ai-generate" id="aiGenerate" type="submit">生成爽点剧本示例</button>
+            <button class="ai-random-btn" id="aiRandom" type="button">随机给我一个灵感</button>
+
+            <div class="ai-model-note">当前单文件版本使用本研究结论构建的本地规则模型，可直接离线演示；部署模型接口后，也可以替换为在线大模型生成。</div>
+          </form>
+
+          <section class="ai-output-card" aria-live="polite">
+            <div class="ai-output-toolbar">
+              <div class="ai-output-status"><i class="ai-status-dot" id="aiStatusDot"></i><span id="aiStatusText">等待输入</span></div>
+              <div class="ai-output-actions">
+                <button class="ai-mini-btn" id="aiRegenerate" type="button" disabled>再生成一次</button>
+                <button class="ai-mini-btn" id="aiCopy" type="button" disabled>复制结果</button>
+              </div>
+            </div>
+            <div class="ai-output-body">
+              <div class="ai-output-empty" id="aiEmpty">
+                <div class="ai-empty-visual">
+                  <div class="ai-empty-track"><i style="--i:0"></i><i style="--i:1"></i><i style="--i:2"></i><i style="--i:3"></i><i style="--i:4"></i><i style="--i:5"></i></div>
+                  <b>输入一个词，让它经过整条生产线</b>
+                  <p>生成结果将同时呈现标题、故事钩子、八步爽点结构、六场短剧示例和预期评论反馈。</p>
+                </div>
+              </div>
+              <div class="ai-thinking" id="aiThinking">
+                <div><b>正在校准爽点位置……</b><div class="ai-thinking-line"><i></i></div></div>
+              </div>
+              <article class="ai-result" id="aiResult"></article>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // ECharts 动态加载：中国大陆 CDN 优先，失败后自动切换备用 CDN。
+    function loadScript(src) {
+      return new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = src; s.onload = resolve; s.onerror = reject; document.head.appendChild(s);
+      });
+    }
+    async function loadECharts() {
+      const urls = [
+        'https://cdn.bootcdn.net/ajax/libs/echarts/5.5.0/echarts.min.js',
+        'https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js',
+        'https://unpkg.com/echarts@5.5.0/dist/echarts.min.js'
+      ];
+      for (const url of urls) {
+        try { await loadScript(url); if (window.echarts) return true; } catch(e) {}
+      }
+      return false;
+    }
+
+    const sections = [...document.querySelectorAll('.section')];
+    const topbar = document.getElementById('topbar');
+    const sideNav = document.getElementById('sideNav');
+    const progressBar = document.getElementById('progressBar');
+    const topIndex = document.getElementById('topIndex');
+
+    sections.forEach((s, i) => {
+      const a = document.createElement('a');
+      a.href = '#' + s.id;
+      a.setAttribute('aria-label', s.dataset.title);
+      a.innerHTML = `<span>${String(i+1).padStart(2,'0')} · ${s.dataset.title}</span>`;
+      sideNav.appendChild(a);
+    });
+    const navLinks = [...sideNav.querySelectorAll('a')];
+
+    function updateScrollUI() {
+      const y = window.scrollY;
+      const max = document.documentElement.scrollHeight - innerHeight;
+      progressBar.style.width = `${Math.max(0, Math.min(100, y / max * 100))}%`;
+      const show = y > innerHeight * .55;
+      topbar.classList.toggle('visible', show);
+      sideNav.classList.toggle('visible', show);
+      let active = 0;
+      sections.forEach((s, i) => { if (s.getBoundingClientRect().top < innerHeight * .48) active = i; });
+      navLinks.forEach((a, i) => a.classList.toggle('active', i === active));
+      topIndex.textContent = `${String(active+1).padStart(2,'0')} / ${String(sections.length).padStart(2,'0')}`;
+    }
+    window.addEventListener('scroll', updateScrollUI, {passive:true});
+    updateScrollUI();
+    document.getElementById('startBtn').addEventListener('click', () => document.getElementById('s2').scrollIntoView({behavior:'smooth'}));
+
+    const revealObserver = new IntersectionObserver(entries => entries.forEach(e => {
+      if (e.isIntersecting) e.target.classList.add('in');
+    }), {threshold:.13});
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+    const counted = new WeakSet();
+    const countObserver = new IntersectionObserver(entries => entries.forEach(e => {
+      if (!e.isIntersecting || counted.has(e.target)) return;
+      counted.add(e.target);
+      const end = Number(e.target.dataset.count); const start = performance.now(); const dur = 1300;
+      function tick(t) { const p = Math.min(1, (t-start)/dur); const decimals = Number(e.target.dataset.decimals || 0); const raw = end*(1-Math.pow(1-p,3)); const v = decimals ? raw.toFixed(decimals) : Math.round(raw).toLocaleString('zh-CN'); e.target.textContent = v; if(p<1) requestAnimationFrame(tick); }
+      requestAnimationFrame(tick);
+    }), {threshold:.6});
+    document.querySelectorAll('[data-count]').forEach(el => countObserver.observe(el));
+
+    const samples = [
+      {title:'十八岁太奶奶驾到，重整家族荣耀', tags:['逆袭','打脸虐渣'], play:'7182.2万', type:'script'},
+      {title:'夫人她专治不服', tags:['逆袭','打脸虐渣'], play:'3.1亿', type:'script'},
+      {title:'真千金她是学霸', tags:['逆袭','打脸虐渣'], play:'854.7万', type:'script'},
+      {title:'幸得相遇离婚时', tags:['逆袭'], play:'1001.9万', type:'script'},
+      {title:'隐身侍卫', tags:['逆袭','打脸虐渣'], play:'5677.6万', type:'script'},
+      {title:'苏太太高调离婚了', tags:['逆袭','打脸虐渣'], play:'1587.8万', type:'extended'},
+      {title:'觉醒当天，我当上全国状元', tags:['逆袭','打脸虐渣'], play:'1.5亿', type:'extended'},
+      {title:'人面桃花长相忆', tags:['逆袭'], play:'1.7亿', type:'extended'}
+    ];
+    const sampleGrid = document.getElementById('sampleGrid');
+    samples.forEach((d,i) => {
+      const el = document.createElement('article');
+      el.className = 'sample-card reveal'; el.dataset.type = d.type;
+      el.innerHTML = `${d.type==='script'?'<span class="script-badge">剧本统计样本</span>':''}<div class="sample-index">SAMPLE ${String(i+1).padStart(2,'0')}</div><h3>${d.title}</h3><div class="tags">${d.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div><div class="sample-meta"><div><span>公开播放量</span><strong>${d.play}</strong></div><span>${d.type==='script'?'进入词频与密度分析':'用于热度与类型观察'}</span></div>`;
+      sampleGrid.appendChild(el); revealObserver.observe(el);
+    });
+    document.querySelectorAll('[data-filter]').forEach(btn => btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-filter]').forEach(b=>b.classList.remove('active')); btn.classList.add('active');
+      const f = btn.dataset.filter;
+      document.querySelectorAll('.sample-card').forEach(c=>c.classList.toggle('hidden', f!=='all' && c.dataset.type!==f));
+    }));
+
+    const wordData = [
+      ['保镖',95,'能力开挂'],['出手',78,'强势反击'],['愤怒',62,'受辱铺垫'],['痛苦',59,'受辱铺垫'],['太奶奶',33,'身份反转'],['董事长',31,'身份反转'],['身份',28,'身份反转'],['制服',27,'强势反击'],['冷静',26,'能力开挂'],['成绩',26,'能力开挂'],['数学',25,'能力开挂'],['神秘',25,'身份反转'],['继承人',24,'身份反转'],['挑衅',23,'受辱铺垫'],['嘲讽',22,'受辱铺垫'],['委屈',22,'受辱铺垫'],['隐身',22,'能力开挂'],['总裁',20,'身份反转'],['杀手',20,'身份反转'],['动手',19,'强势反击'],['欺负',18,'受辱铺垫'],['离婚',18,'受辱铺垫'],['保护',17,'情感补偿'],['支持',17,'情感补偿'],['深情',17,'情感补偿'],['修仙',15,'能力开挂'],['爆发',15,'强势反击'],['设计师',15,'能力开挂'],['小三',14,'受辱铺垫'],['监控',14,'复仇清算'],['巴掌',13,'强势反击'],['状元',13,'能力开挂'],['异能',12,'能力开挂'],['当众',12,'强势反击'],['收拾',12,'强势反击'],['后妈',11,'受辱铺垫'],['威胁',11,'强势反击'],['守护',11,'情感补偿'],['千金',10,'身份反转'],['爽',10,'爽感表达'],['绑架',10,'受辱铺垫'],['误会',10,'受辱铺垫'],['道歉',10,'强势反击'],['银翼',10,'身份反转'],['高手',10,'能力开挂'],['出轨',9,'受辱铺垫'],['复仇',9,'复仇清算'],['清北',9,'能力开挂'],['证据',9,'复仇清算']
+    ];
+    const categoryNames = ['全部','身份反转','能力开挂','受辱铺垫','强势反击','情感补偿','复仇清算','爽感表达'];
+    const wordToolbar = document.getElementById('wordToolbar');
+    const wordCloud = document.getElementById('wordCloud');
+    const wordTip = document.getElementById('wordTip');
+    categoryNames.forEach((c,i)=>{
+      const b=document.createElement('button'); b.className='pill-btn'+(i===0?' active':''); b.textContent=c;
+      b.addEventListener('click',()=>{ [...wordToolbar.children].forEach(x=>x.classList.remove('active')); b.classList.add('active'); document.querySelectorAll('.word').forEach(w=>w.classList.toggle('dim',c!=='全部'&&w.dataset.cat!==c)); });
+      wordToolbar.appendChild(b);
+    });
+    const min=9,max=95;
+    wordData.forEach((d,i)=>{
+      const b=document.createElement('button'); b.className='word'; b.textContent=d[0]; b.dataset.cat=d[2];
+      b.style.fontSize=`${14 + Math.sqrt((d[1]-min)/(max-min))*31}px`; b.style.transform=`rotate(${[-4,3,-2,5,0][i%5]}deg)`;
+      function showTip(e){ const r=wordPanelRect(); wordTip.innerHTML=`<b>${d[0]} · ${d[1]}次</b>${d[2]}`; wordTip.style.left=(e.clientX-r.left)+'px'; wordTip.style.top=(e.clientY-r.top)+'px'; wordTip.style.opacity=1; }
+      b.addEventListener('mousemove',showTip); b.addEventListener('mouseenter',showTip); b.addEventListener('mouseleave',()=>wordTip.style.opacity=0);
+      b.addEventListener('click',()=>{ document.querySelectorAll('.word').forEach(x=>x.classList.remove('active')); b.classList.add('active'); });
+      wordCloud.appendChild(b);
+    });
+    function wordPanelRect(){return document.querySelector('.word-panel').getBoundingClientRect();}
+
+    const flowData = [
+      ['受辱铺垫','先制造“不爽”','被欺负 / 被背叛 / 被误会','先让观众产生憋屈、愤怒和不平感。'],
+      ['隐藏优势','主角其实有底牌','身份 / 能力 / 靠山 / 前史','主角表面弱，实际拥有隐藏身份、专业能力、强大靠山或特殊能力。'],
+      ['冲突升级','反派继续作死','挑衅 / 羞辱 / 陷害 / 压迫','反派越嚣张，观众等待反击的欲望越强。'],
+      ['爽点爆发','主角出手打脸','打脸 / 碾压 / 震慑 / 揭穿','主角通过武力、智力、身份或证据迅速反击，释放第一波“爽”。'],
+      ['反转清算','反派付出代价','身份亮出 / 证据公开 / 权力接管','不只是一巴掌，而是让反派真正失去资源、权力与体面。'],
+      ['情感补偿','主角被撑腰','认可 / 保护 / 偏爱 / 身份确认','主角不仅赢了反派，也获得认可、保护与情感补偿。'],
+      ['评论反馈','评论区验证爽点','爽 / 解气 / 过瘾 / 继续期待','评论语言证明爽点有效，并形成平台可识别的反馈信号。'],
+      ['循环复制','爽点继续生产','平台数据推动同类结构复用','数据和评论反馈推动下一轮“再受辱—再反击—再清算”。']
+    ];
+    const flowGrid=document.getElementById('flowGrid'), flowDetail=document.getElementById('flowDetail'), flowProgress=document.getElementById('flowProgress');
+    flowData.forEach((d,i)=>{ const b=document.createElement('button'); b.className='flow-step'; b.innerHTML=`<div class="flow-num">${i+1}</div><h3>${d[0]}</h3><p>${d[1]}</p>`; b.addEventListener('click',()=>activateFlow(i,true)); flowGrid.appendChild(b); });
+    let flowIndex=0, flowTimer;
+    function activateFlow(i, manual=false){ flowIndex=i; [...flowGrid.children].forEach((x,j)=>x.classList.toggle('active',j===i)); const d=flowData[i]; flowDetail.innerHTML=`<b>${d[0]}：</b>${d[2]}。${d[3]}`; flowProgress.style.width=`${(i+1)/flowData.length*100}%`; if(manual){clearInterval(flowTimer); flowTimer=setInterval(()=>activateFlow((flowIndex+1)%flowData.length),2600);} }
+    activateFlow(0); flowTimer=setInterval(()=>activateFlow((flowIndex+1)%flowData.length),2600);
+
+    const comments = [
+      ['“打脸来的好快，容遇面前，纪止渊也只能盘着。”','代表性评论 · 爽/解气'],
+      ['“终于把这个女配开除了，看着太解气了！”','代表性评论 · 赞/认可'],
+      ['“顶着最甜的脸，带着最强的气场。”','代表性评论 · 甜/上头'],
+      ['“姐姐太飒太帅了。”','代表性评论 · 燃/霸气'],
+      ['“太奶奶你清理门户任重而道远啊。”','代表性评论 · 搞笑/欢乐']
+    ];
+    let commentIndex=0; setInterval(()=>{commentIndex=(commentIndex+1)%comments.length; const el=document.getElementById('commentTicker'); el.style.opacity=.25; setTimeout(()=>{el.innerHTML=`${comments[commentIndex][0]}<small>${comments[commentIndex][1]}</small>`; el.style.opacity=1;},250);},3200);
+
+    const data = {
+      topic: {years:['2020','2021','2022','2023','2024'], values:[9.4,36.8,101.7,373.9,504.4], growth:[null,291.49,176.36,267.65,34.90]},
+      rank: {cats:['逆袭','现代','打脸虐渣','总裁','都市日常','家庭伦理','古代','现代言情','大女主','马甲'], vals:[143.9,127,125.7,66.2,62.6,54.7,50.8,49.2,41,37.6]},
+      category: [
+        {name:'身份反转',value:715,desc:'你以为她普通，其实她拥有隐藏身份、权力或家族位置。'},
+        {name:'情感补偿',value:560,desc:'主角被保护、被偏爱、被承认，补偿此前的委屈。'},
+        {name:'能力开挂',value:524,desc:'学霸、异能、武力与专业能力完成碾压。'},
+        {name:'受辱铺垫',value:396,desc:'先制造压迫、委屈和不公平，为后续解气蓄力。'},
+        {name:'强势反击',value:262,desc:'主角不再忍气吞声，立刻回怼、出手或当众打脸。'},
+        {name:'复仇清算',value:164,desc:'反派不只被打脸，还要失去资源、权力并承担后果。'},
+        {name:'爽感表达',value:22,desc:'“爽、过瘾、霸气”等直接表达情绪释放。'}
+      ],
+      density: [
+        {name:'夫人她专治不服',value:13.0177,words:54541,hits:710,note:'爽点关键词命中最高，密度最高'},
+        {name:'十八岁太奶奶驾到，重整家族荣耀',value:11.6707,words:36416,hits:425,note:'身份反转、能力开挂词较集中'},
+        {name:'幸得相遇离婚时',value:10.1517,words:51420,hits:522,note:'离婚复仇线稳定制造爽点'},
+        {name:'隐身侍卫',value:8.1959,words:90289,hits:740,note:'总次数高，但文本体量也最大'},
+        {name:'真千金她是学霸',value:5.2172,words:47152,hits:246,note:'扫描版 OCR 识别，建议复核'}
+      ],
+      sentiment: [
+        {name:'爽/解气',value:144,pct:72}, {name:'搞笑/欢乐',value:18,pct:9}, {name:'赞/认可',value:15,pct:7.5}, {name:'甜/上头',value:14,pct:7}, {name:'燃/霸气',value:9,pct:4.5}
+      ]
+    };
+
+    const charts = {};
+    function baseTooltip(){ return {backgroundColor:'rgba(28,24,26,.94)', borderWidth:0, padding:[10,13], textStyle:{color:'#fff'}, extraCssText:'border-radius:10px;box-shadow:0 12px 30px rgba(0,0,0,.25)'}; }
+    function topicOption(){ return {
+      animationDuration:1700,
+      animationEasing:'cubicOut',
+      grid:{left:62,right:34,top:100,bottom:58},
+      title:{text:'2020—2024年中国微短剧市场规模',subtext:'市场规模（亿元）｜点击折线节点查看年份信息',left:'center',top:25,textStyle:{fontSize:22,color:'#2c2729',fontWeight:800},subtextStyle:{color:'#7c716c'}},
+      tooltip:{...baseTooltip(),trigger:'axis',axisPointer:{type:'line',lineStyle:{color:'#a5231c',type:'dashed'}},formatter:ps=>{const p=ps[0],i=p.dataIndex,g=data.topic.growth[i];return `<b>${p.name}年</b><br>市场规模：${p.value}亿元${g===null?'':`<br>同比增长：${g.toFixed(2)}%`}`;}},
+      xAxis:{type:'category',boundaryGap:false,data:data.topic.years,axisTick:{show:false},axisLine:{lineStyle:{color:'#b8aaa0'}},axisLabel:{color:'#5f5754',fontWeight:700}},
+      yAxis:{type:'value',name:'亿元',nameTextStyle:{color:'#887d77',padding:[0,0,0,-30]},max:550,axisLine:{show:false},axisTick:{show:false},splitLine:{lineStyle:{color:'#e4d9cf',type:'dashed'}},axisLabel:{color:'#887d77'}},
+      series:[{name:'市场规模',type:'line',smooth:.28,symbol:'circle',symbolSize:10,showAllSymbol:true,data:data.topic.values,lineStyle:{width:4,color:'#9f261f'},itemStyle:{color:'#9f261f',borderColor:'#fff8f2',borderWidth:3,shadowBlur:12,shadowColor:'rgba(159,38,31,.35)'},areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'rgba(159,38,31,.34)'},{offset:1,color:'rgba(159,38,31,.02)'}]}},label:{show:true,position:'top',formatter:p=>`${p.value}亿`,color:'#4a4140',fontWeight:800},emphasis:{scale:1.25}}]
+    }; }
+    function rankOption(){ return {animationDuration:1550,animationDelay:i=>i*70,grid:{left:100,right:80,top:82,bottom:42},title:{text:'2025年中国微短剧细分题材热度排名',subtext:'热力值排名前 10｜项目原有题材热度数据',left:'center',top:22,textStyle:{fontSize:22,color:'#292426',fontWeight:800},subtextStyle:{color:'#807570'}},tooltip:{...baseTooltip(),trigger:'axis',axisPointer:{type:'shadow'},formatter:ps=>{const p=ps[0];return `<b>${p.name}</b><br>热力值：${p.value} 亿元<br>排名：第 ${p.dataIndex+1} 位${p.dataIndex===0?'<br><span style="color:#ffaaa0">● 本项目研究对象</span>':''}`;}},xAxis:{type:'value',max:160,axisLabel:{color:'#867a75'},splitLine:{lineStyle:{color:'#e2d8cf',type:'dashed'}}},yAxis:{type:'category',inverse:true,data:data.rank.cats,axisTick:{show:false},axisLine:{show:false},axisLabel:{color:'#3b3537',fontSize:13,fontWeight:700}},series:[{type:'bar',barWidth:22,data:data.rank.vals.map((v,i)=>({value:v,itemStyle:{color:i===0?'#9f261f':i===2?'#552326':i===1?'#29262a':'#d6bdb2',borderRadius:[0,6,6,0]}})),label:{show:true,position:'right',formatter:'{c}亿',color:'#51484a',fontSize:11}}]}; }
+    let categoryMode='donut';
+    function categoryOption(){ if(categoryMode==='bar') return {animationDuration:1200,grid:{left:95,right:40,top:80,bottom:45},title:{text:'五部剧本爽点类别汇总',subtext:'共命中 2,643 次',left:'center',top:24,textStyle:{fontSize:22,color:'#2d282a',fontWeight:800},subtextStyle:{color:'#81756f'}},tooltip:{...baseTooltip(),trigger:'axis',axisPointer:{type:'shadow'}},xAxis:{type:'value',axisLabel:{color:'#81756f'},splitLine:{lineStyle:{color:'#e4d9cf',type:'dashed'}}},yAxis:{type:'category',inverse:true,data:data.category.map(x=>x.name),axisLine:{show:false},axisTick:{show:false},axisLabel:{color:'#4a4243',fontWeight:700}},series:[{type:'bar',data:data.category.map((x,i)=>({value:x.value,itemStyle:{color:['#561f21','#8c302b','#ad4d43','#cb7b70','#d3a397','#c8b5aa','#b6aaa3'][i],borderRadius:[0,8,8,0]}})),barWidth:26,label:{show:true,position:'right',formatter:p=>`${p.value}次`,color:'#564c4c',fontWeight:700}}]}; return {animationDuration:1350,title:{text:'2,643',subtext:'爽点关键词命中',left:'center',top:'42%',textAlign:'center',textStyle:{fontSize:34,color:'#8f261f',fontWeight:900},subtextStyle:{fontSize:12,color:'#81756f'}},tooltip:{...baseTooltip(),trigger:'item',formatter:p=>`<b>${p.name}</b><br>${p.value} 次 · ${p.percent}%`},legend:{bottom:24,left:'center',icon:'circle',textStyle:{color:'#615856'}},series:[{type:'pie',radius:['34%','65%'],center:['50%','47%'],avoidLabelOverlap:true,itemStyle:{borderColor:'#f8f2eb',borderWidth:4,borderRadius:7},label:{show:true,formatter:'{b}\n{d}%',color:'#3e3738',fontWeight:700},labelLine:{length:12,length2:8},data:data.category,color:['#561f21','#8c302b','#ad4d43','#cb7b70','#d3a397','#c8b5aa','#b6aaa3'],emphasis:{scaleSize:12}}]}; }
+    function densityOption(){ return {animationDuration:1450,animationDelay:i=>i*100,grid:{left:195,right:45,top:84,bottom:44},title:{text:'五部短剧爽点密度',subtext:'单位：次 / 千字｜点击柱形查看文本体量',left:'center',top:24,textStyle:{fontSize:22,color:'#2d282a',fontWeight:800},subtextStyle:{color:'#81756f'}},tooltip:{...baseTooltip(),trigger:'axis',axisPointer:{type:'shadow'},formatter:ps=>{const p=ps[0],d=data.density[p.dataIndex];return `<b>${d.name}</b><br>爽点密度：${d.value.toFixed(2)} 次/千字<br>文本字数：${d.words.toLocaleString()}<br>关键词命中：${d.hits} 次`;}},xAxis:{type:'value',max:14,axisLabel:{color:'#807570'},splitLine:{lineStyle:{color:'#ded4cc',type:'dashed'}}},yAxis:{type:'category',inverse:true,data:data.density.map(x=>x.name),axisTick:{show:false},axisLine:{show:false},axisLabel:{color:'#403a3b',fontSize:12,width:170,overflow:'truncate'}},series:[{type:'bar',barWidth:30,data:data.density.map((x,i)=>({value:x.value,itemStyle:{color:i===0?'#a5231c':i===1?'#632225':'#c98e83',borderRadius:[0,8,8,0]}})),label:{show:true,position:'right',formatter:p=>p.value.toFixed(2),color:'#51494a',fontWeight:800},markLine:{silent:true,symbol:'none',label:{formatter:'五部平均 9.65',color:'#8d2f2b'},lineStyle:{color:'#8d2f2b',type:'dashed'},data:[{xAxis:9.6506}]}}]}; }
+    let sentimentMode='rose';
+    function sentimentOption(){ if(sentimentMode==='bar') return {animationDuration:1200,grid:{left:95,right:42,top:86,bottom:42},title:{text:'评论区里的情绪反馈',subtext:'200 条评论主情绪分布',left:'center',top:24,textStyle:{fontSize:22,color:'#2d282a',fontWeight:800},subtextStyle:{color:'#81756f'}},tooltip:{...baseTooltip(),trigger:'axis',axisPointer:{type:'shadow'}},xAxis:{type:'value',max:80,axisLabel:{formatter:'{value}%',color:'#807570'},splitLine:{lineStyle:{color:'#e2d8cf',type:'dashed'}}},yAxis:{type:'category',inverse:true,data:data.sentiment.map(x=>x.name),axisLine:{show:false},axisTick:{show:false},axisLabel:{color:'#403a3b',fontWeight:700}},series:[{type:'bar',barWidth:28,data:data.sentiment.map((x,i)=>({value:x.pct,itemStyle:{color:['#a5231c','#4d4346','#c87970','#d6aa9d','#6e2829'][i],borderRadius:[0,8,8,0]}})),label:{show:true,position:'right',formatter:'{c}%',color:'#51494a',fontWeight:800}}]}; return {animationDuration:1400,title:{text:'72%',subtext:'“爽/解气”',left:'center',top:'42%',textAlign:'center',textStyle:{fontSize:39,color:'#a5231c',fontWeight:900},subtextStyle:{fontSize:13,color:'#716762'}},tooltip:{...baseTooltip(),trigger:'item',formatter:p=>`<b>${p.name}</b><br>${p.value} 条 · ${p.percent}%`},legend:{bottom:25,left:'center',icon:'circle',textStyle:{color:'#615856'}},series:[{type:'pie',radius:['33%','67%'],center:['50%','47%'],roseType:'radius',itemStyle:{borderColor:'#f8f2eb',borderWidth:4,borderRadius:8},label:{formatter:'{b}\n{d}%',color:'#3f3839',fontWeight:700},data:data.sentiment,color:['#a5231c','#4d4346','#c87970','#d6aa9d','#6e2829']}]}; }
+
+    const options = {topicChart:topicOption,rankChart:rankOption,categoryChart:categoryOption,densityChart:densityOption,sentimentChart:sentimentOption};
+    function makeFallback(id, rows, headers){ const el=document.querySelector(`.chart-fallback[data-for="${id}"]`); el.style.display='block'; el.innerHTML=`<p><b>动态图表未加载，下面显示原始数据。</b></p><table><thead><tr>${headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(x=>`<td>${x}</td>`).join('')}</tr>`).join('')}</tbody></table>`; }
+    function showFallbacks(){
+      document.querySelectorAll('.chart').forEach(x=>x.style.display='none');
+      makeFallback('topicChart', data.topic.years.map((y,i)=>[y+'年',data.topic.values[i]+'亿元',data.topic.growth[i]===null?'—':data.topic.growth[i].toFixed(2)+'%']),['年份','市场规模','同比增长']);
+      makeFallback('rankChart', data.rank.cats.map((x,i)=>[i+1,x,data.rank.vals[i]+'亿元']),['排名','题材','热力值']);
+      makeFallback('categoryChart', data.category.map(x=>[x.name,x.value]),['类别','出现次数']);
+      makeFallback('densityChart', data.density.map(x=>[x.name,x.value.toFixed(2),x.words,x.hits]),['剧名','次/千字','文本字数','命中次数']);
+      makeFallback('sentimentChart', data.sentiment.map(x=>[x.name,x.value,x.pct+'%']),['情绪类别','评论条数','占比']);
+    }
+
+    function initChart(id){ if(charts[id] || !window.echarts) return; const el=document.getElementById(id); charts[id]=echarts.init(el,null,{renderer:'canvas'}); charts[id].setOption(options[id]()); if(id==='topicChart') charts[id].on('click',p=>{const i=p.dataIndex,g=data.topic.growth[i],box=document.getElementById('marketDetail'); box.innerHTML=`<b>${data.topic.years[i]}年：</b>市场规模为${data.topic.values[i]}亿元${g===null?'，这是图表的起始年份。':`，同比增长${g.toFixed(2)}%。`}`; box.classList.remove('flash'); void box.offsetWidth; box.classList.add('flash'); setTimeout(()=>box.classList.remove('flash'),420);}); if(id==='categoryChart') charts[id].on('click',p=>{const d=data.category.find(x=>x.name===p.name); if(d) document.getElementById('categoryTicker').innerHTML=`${d.name}在五部剧本中出现 ${d.value} 次，占全部爽点词的 ${(d.value/2643*100).toFixed(1)}%。<small>${d.desc}</small>`;}); if(id==='densityChart') charts[id].on('click',p=>{const d=data.density[p.dataIndex]; document.getElementById('densityDetail').innerHTML=`<div class="detail-card"><b>${d.name}</b><span>${d.value.toFixed(2)} 次 / 千字，排名第 ${p.dataIndex+1}</span></div><div class="detail-card"><b>文本口径</b><span>${d.words.toLocaleString()} 字，命中 ${d.hits} 次。${d.note}</span></div>`;}); }
+    let chartObserver;
+    async function bootCharts(){ const ok=await loadECharts(); if(!ok){showFallbacks();return;} chartObserver=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)initChart(e.target.id);}),{threshold:.18}); document.querySelectorAll('.chart').forEach(c=>chartObserver.observe(c)); window.addEventListener('resize',()=>Object.values(charts).forEach(c=>c.resize())); }
+    bootCharts();
+
+    document.querySelectorAll('[data-replay]').forEach(b=>b.addEventListener('click',()=>{const id=b.dataset.replay;if(!charts[id])return;charts[id].clear();charts[id].setOption(options[id]());}));
+    document.querySelectorAll('[data-mode="category"]').forEach(b=>b.addEventListener('click',()=>{categoryMode=b.dataset.value;document.querySelectorAll('[data-mode="category"]').forEach(x=>x.classList.toggle('active',x===b));if(charts.categoryChart){charts.categoryChart.clear();charts.categoryChart.setOption(categoryOption());}}));
+    document.querySelectorAll('[data-mode="sentiment"]').forEach(b=>b.addEventListener('click',()=>{sentimentMode=b.dataset.value;document.querySelectorAll('[data-mode="sentiment"]').forEach(x=>x.classList.toggle('active',x===b));if(charts.sentimentChart){charts.sentimentChart.clear();charts.sentimentChart.setOption(sentimentOption());}}));
+
+
+    // ===== AI 爽点剧本实验室（静态文件可运行的研究规则生成器） =====
+    const aiPrompt = document.getElementById('aiPrompt');
+    const aiGenre = document.getElementById('aiGenre');
+    const aiIntensity = document.getElementById('aiIntensity');
+    const aiIntensityValue = document.getElementById('aiIntensityValue');
+    const aiScriptForm = document.getElementById('aiScriptForm');
+    const aiGenerate = document.getElementById('aiGenerate');
+    const aiRandom = document.getElementById('aiRandom');
+    const aiRegenerate = document.getElementById('aiRegenerate');
+    const aiCopy = document.getElementById('aiCopy');
+    const aiEmpty = document.getElementById('aiEmpty');
+    const aiThinking = document.getElementById('aiThinking');
+    const aiResult = document.getElementById('aiResult');
+    const aiStatusText = document.getElementById('aiStatusText');
+    const aiStatusDot = document.getElementById('aiStatusDot');
+
+    let aiAttempt = 0;
+    let lastAIResult = null;
+    const inspirationPool = ['被裁员的实习生','假千金高考逆袭','离婚当天继承百亿集团','底层保安觉醒异能','被冒名顶替的设计师','在家族宴会上被嘲笑的真千金','被前夫抛弃的全职太太','被同学孤立的转学生'];
+
+    const aiThemeBank = {
+      workplace: {
+        label: '职场商战',
+        protagonists: ['刚被裁员的实习生林晚','被夺走方案署名的新人许知意','被全公司当成替罪羊的策划师顾然'],
+        antagonists: ['抢走她方案的部门主管周启','靠关系升职的项目总监程曼','当众甩锅的副总韩彻'],
+        venues: ['季度新品发布会','集团年度述职大会','投资人评审现场'],
+        humiliations: ['“能力不足”为由被当众辞退','核心成果被冒名顶替','被逼在全体员工面前承认项目失败'],
+        hidden: ['她正是集团匿名聘请的并购顾问，也是核心方案的原作者','她手里握有完整的原始代码、提交记录和董事会授权','她其实是控股公司的新任战略负责人'],
+        actions: ['调出原始文件时间戳并现场复盘全部决策','让大屏同时播放代码提交记录和邮件留痕','当场接通董事会视频会议'],
+        evidence: ['原始文件、服务器日志与董事会授权书同时公开','审计报告与邮件时间戳形成完整证据链','被删除的会议录音在大屏恢复'],
+        rewards: ['董事会当场任命她为项目负责人','真正认可她的团队站到她身后','投资人将项目全权交由她重新启动'],
+        hooks: ['她刚接过工牌，后台却弹出一条匿名警告：真正的操盘者还没有现身','被清算的主管只是棋子，董事会名单里还有一个熟悉的名字','新项目启动当天，竞争公司送来了一份写有她旧名的合同'],
+        titles: ['《被裁员当天，我接管了整个项目》','《他们抢走我的方案，却不知道我才是甲方》','《实习生离场后，董事会全员起立》']
+      },
+      school: {
+        label: '校园学霸',
+        protagonists: ['被嘲笑“乡下转学生”的沈知夏','被冒名顶替竞赛成绩的林思遥','被全班认定会落榜的许清禾'],
+        antagonists: ['仗着家世排挤她的班长林心妍','偷走她研究成果的竞赛队长','在家长会上公开羞辱她的教导主任'],
+        venues: ['高考放榜大会','全国竞赛答辩现场','全校荣誉表彰会'],
+        humiliations: ['被当众嘲笑不配参加重点班考试','竞赛成果被别人署名','被要求在全校面前为“作弊”道歉'],
+        hidden: ['她早已以匿名身份拿下国际竞赛满分','教育部门保存着她完整的原始答卷和实验记录','她是国家少年科研计划的核心成员'],
+        actions: ['现场解出无人完成的终极题并复原全部实验数据','要求主办方公开盲审编号和原始答卷','在直播镜头前完成第二套满分答卷'],
+        evidence: ['盲审编号、原始答卷与监控记录同时公开','国家竞赛组委会发来正式澄清文件','实验日志证明所有关键步骤均由她独立完成'],
+        rewards: ['全校当场宣布撤销处分并授予最高荣誉','曾经沉默的老师和同学主动站到她身边','顶尖学府向她发出提前录取通知'],
+        hooks: ['她以为一切结束，手机却收到一张十八年前的出生证明','校长宣布结果后，礼堂最后一排站起一个与她长相相似的女人','录取通知书背面，出现了一个被刻意遮住的家族徽记'],
+        titles: ['《他们笑我落榜，放榜后全校沉默了》','《真千金不争家产，只拿全国第一》','《被顶替成绩后，我在直播里再考一次》']
+      },
+      divorce: {
+        label: '离婚逆袭',
+        protagonists: ['被前夫赶出家门的苏念','替丈夫付出十年的全职太太唐宁','在周年宴上被公开背叛的顾清妍'],
+        antagonists: ['转移婚内资产的前夫陆景川','带着第三者登堂入室的丈夫','联合婆家逼她净身出户的前夫'],
+        venues: ['婆婆寿宴','集团签约发布会','离婚协议签署现场'],
+        humiliations: ['被逼净身出户并当众承认“没有能力”','怀孕期间被丈夫和第三者羞辱','十年付出被一句“你只会花钱”全部否定'],
+        hidden: ['她才是集团真正的隐名股东','她保存了全部资产转移证据，同时拥有关键供应链','她离开家庭前就是顶级投资人，只是暂停了自己的事业'],
+        actions: ['将婚内资产流向和隐名股权证明投上宴会大屏','当众暂停前夫公司全部核心供应','让律师宣读股权冻结与财产保全决定'],
+        evidence: ['银行流水、聊天记录与股权协议形成完整证据链','司机行车记录和财务审计同时证明资产转移','隐名持股协议与董事会决议正式生效'],
+        rewards: ['她重返集团并成为新任董事长','真正尊重她的合作伙伴陪她重新开启事业','家人第一次不再要求她忍耐，而是公开支持她'],
+        hooks: ['签字离婚后，她发现前夫转移的两亿资产最终流向了自己失踪多年的姐姐','她刚接任董事长，会议室门外出现一名自称她合法继承人的女孩','前夫跪下求她回头时，真正的幕后投资人推门而入'],
+        titles: ['《离婚当天，我成了他的甲方》','《净身出户后，前夫公司断供了》','《他们逼我离婚，却不知道集团姓我》']
+      },
+      identity: {
+        label: '豪门身份',
+        protagonists: ['被豪门嫌弃的真千金阮星晚','被当成佣人使唤的养女容清','在家族宴会上被赶出门的沈予安'],
+        antagonists: ['占据她位置多年的假千金','偏心养女的豪门父母和三位哥哥','认定她只为财产回来的家族继承人'],
+        venues: ['豪门认亲宴','集团继承人发布会','家族基金年度晚宴'],
+        humiliations: ['被要求向假千金下跪道歉','亲生家人公开宣布与她断绝关系','被指责没有教养、不配继承任何东西'],
+        hidden: ['她早已被祖父指定为唯一继承人','她是家族海外基金真正的控制人','她掌握母亲留下的遗嘱和集团核心专利'],
+        actions: ['让律师当众宣读遗嘱与股权托管协议','以基金控制人身份暂停全家人的信托权限','拿出亲子鉴定与母亲留下的完整录像'],
+        evidence: ['遗嘱、亲子鉴定和股权文件被同步公证','海外基金授权与集团印章全部指向她','母亲留下的录像揭开当年抱错真相'],
+        rewards: ['家族元老集体向她行礼并确认继承人身份','她拒绝廉价道歉，选择建立属于自己的事业','一直保护她的祖父将集团印章交到她手中'],
+        hooks: ['继承仪式结束后，公证员却拿出第二份从未公开的遗嘱','她拒绝回到豪门，却收到一封署名“真正母亲”的信','假千金离场前低声提醒：当年的抱错并不是意外'],
+        titles: ['《认亲宴上，他们才知道我掌控家族基金》','《豪门赶我出门后，全家信托被冻结》','《真千金不回家，只接管集团》']
+      },
+      power: {
+        label: '异能崛起',
+        protagonists: ['被扣工资的底层保安张易','被所有人当成废物的外卖员顾沉','在地下拳馆负责清洁的青年林川'],
+        antagonists: ['仗势欺人的豪门少爷','长期克扣工资的安保经理','把普通人当玩具的地下势力头目'],
+        venues: ['集团庆功宴','地下拳馆擂台','豪门慈善拍卖会'],
+        humiliations: ['为了妹妹学费忍受克扣和羞辱','被逼当众从贵宾通道滚出去','因保护陌生女孩而被诬陷偷窃'],
+        hidden: ['一次意外唤醒了祖辈封存的修为传承','他的身体能够读取并复制对手的力量轨迹','他其实是失踪多年的古武家族继承人'],
+        actions: ['只用一招截停所有保镖并让监控画面恢复','在擂台上精准拆解对手全部招式','徒手接住砸向人群的钢架'],
+        evidence: ['监控录像恢复，真正的陷害者无处可逃','家族信物与古武协会档案确认他的身份','现场检测证明对手长期使用禁药'],
+        rewards: ['女总裁公开邀请他担任集团安全负责人','曾经被欺负的普通人第一次敢站出来作证','妹妹的学费得到解决，他也找到真正的家族线索'],
+        hooks: ['所有人以为他赢了，体内却响起第二道陌生声音','豪门少爷被带走前说出一个只有他爷爷知道的名字','古武协会来人，却称他的传承本应在二十年前被销毁'],
+        titles: ['《底层保安觉醒后，豪门排队道歉》','《一碗麻辣烫后，我继承了百年修为》','《他们笑我是保安，直到我徒手截停钢架》']
+      }
+    };
+
+    function aiHash(str) {
+      let h = 2166136261;
+      for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
+      return Math.abs(h >>> 0);
+    }
+    function aiPick(arr, seed, offset=0) { return arr[(seed + offset * 131) % arr.length]; }
+    function aiEscape(value) { return String(value).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+    function aiTrimKeyword(value) { return value.replace(/[《》“”"']/g,'').replace(/\s+/g,' ').trim().slice(0,28); }
+    function aiDetectTheme(keyword, selected) {
+      if (selected && selected !== 'auto') return selected;
+      if (/高考|学校|学霸|成绩|竞赛|同学|老师|校园/.test(keyword)) return 'school';
+      if (/离婚|前夫|丈夫|婆婆|婚姻|小三|全职太太/.test(keyword)) return 'divorce';
+      if (/实习|职场|裁员|公司|方案|项目|甲方|总监|设计师/.test(keyword)) return 'workplace';
+      if (/豪门|千金|继承|认亲|家族|哥哥|养女/.test(keyword)) return 'identity';
+      if (/保安|保镖|异能|觉醒|修为|战神|拳|侍卫/.test(keyword)) return 'power';
+      return ['workplace','identity','divorce','school','power'][aiHash(keyword) % 5];
+    }
+    function aiLooksLikeTitle(value) { return /《.+》/.test(value.trim()) || value.trim().length >= 14; }
+
+    function buildLocalAIScript(rawKeyword, selectedGenre, intensity, attempt=0) {
+      const keyword = aiTrimKeyword(rawKeyword) || '被误解的普通人';
+      const themeKey = aiDetectTheme(keyword, selectedGenre);
+      const bank = aiThemeBank[themeKey];
+      const seed = aiHash(keyword + '|' + themeKey + '|' + intensity + '|' + attempt);
+      const protagonist = aiPick(bank.protagonists, seed, 1);
+      const antagonist = aiPick(bank.antagonists, seed, 2);
+      const venue = aiPick(bank.venues, seed, 3);
+      const humiliation = aiPick(bank.humiliations, seed, 4);
+      const hidden = aiPick(bank.hidden, seed, 5);
+      const action = aiPick(bank.actions, seed, 6);
+      const evidence = aiPick(bank.evidence, seed, 7);
+      const reward = aiPick(bank.rewards, seed, 8);
+      const hook = aiPick(bank.hooks, seed, 9);
+      const title = aiLooksLikeTitle(rawKeyword) ? (rawKeyword.trim().startsWith('《') ? rawKeyword.trim() : `《${rawKeyword.trim()}》`) : aiPick(bank.titles, seed, 10);
+      const forceWords = ['克制反转','标准爽感','强势打脸','高密连爆','极致连环清算'];
+      const pressure = intensity >= 4 ? '当众' : intensity >= 3 ? '公开' : '意外';
+      const punishment = intensity >= 5 ? '被解除全部职务、冻结资产并当场带走' : intensity >= 4 ? '失去职位与核心资源' : intensity >= 3 ? '被公开撤职并道歉' : '被迫承认真相';
+
+      const beats = [
+        ['受辱铺垫', `${protagonist}在${venue}因${humiliation}。`],
+        ['隐藏优势', `观众先知道、反派不知道：${hidden}。`],
+        ['冲突升级', `${antagonist}继续加码，逼主角在所有人面前认输。`],
+        ['爽点爆发', `${protagonist}${pressure}${action}，完成第一次即时打脸。`],
+        ['反转清算', `${evidence}，${antagonist}${punishment}。`],
+        ['情感补偿', `${reward}，主角得到迟来的认可与支持。`],
+        ['评论反馈', `预期形成“早该这样”“太解气了”“别原谅”的集中反馈。`],
+        ['循环钩子', `${hook}，把观众推向下一集。`]
+      ];
+
+      const sharper = intensity >= 4;
+      const scenes = [
+        {
+          title: `场景一｜${venue}·公开受辱`, tag: '情绪蓄压',
+          text: `${antagonist}把一份文件扔到桌上：“像你这种人，能站在这里已经是运气。”\n${protagonist}没有争辩，只抬眼问：“你确定，要当着所有人的面把这句话说完？”`
+        },
+        {
+          title: '场景二｜走廊·底牌埋伏', tag: '隐藏优势',
+          text: `众人散去后，主角手机亮起一条加密消息：${hidden}。\n她回复：“按原计划，等他自己把最后一步走完。”`
+        },
+        {
+          title: `场景三｜${venue}·冲突加码`, tag: '反派作死',
+          text: `${antagonist}要求主角立即签下认错书，还宣布要把她永久逐出项目。\n围观者沉默，反派笑道：“现在道歉，还来得及。”`
+        },
+        {
+          title: '场景四｜大屏亮起·第一次打脸', tag: '爽点爆发',
+          text: `${protagonist}按下遥控器，${action}。\n她看向反派：“你拿走的是我的名字，不是我的能力。”${sharper ? '\n全场手机同时收到一份不可撤回的证据副本。' : ''}`
+        },
+        {
+          title: '场景五｜证据公开·反转清算', tag: '权力回收',
+          text: `${evidence}。主持人当场宣布暂停会议，安保人员走向${antagonist}。\n主角只说了一句：“道歉不是结局，承担代价才是。”`
+        },
+        {
+          title: '场景六｜新位置·情感补偿与钩子', tag: '追更机制',
+          text: `${reward}。那些曾经沉默的人终于站到她身边。\n就在掌声响起时，${hook}。画面停在主角骤然冷下来的眼神上。`
+        }
+      ];
+
+      const comments = intensity >= 4
+        ? ['“这才叫当场打脸！”','“证据直接投大屏，太解气了”','“千万别原谅，继续清算”','“下一集幕后的人是谁？”']
+        : ['“终于反击了”','“身份什么时候彻底公开？”','“这一段很解气”','“想看反派继续付出代价”'];
+
+      return {
+        title, theme: bank.label, intensityLabel: forceWords[intensity-1], keyword,
+        logline: `${protagonist}遭到${antagonist}压制，却凭借隐藏底牌在${venue}完成反击；当真相与证据同时公开，原本掌控局面的人反而成为被清算者。`,
+        beats, scenes, comments, hook
+      };
+    }
+
+    function renderAIScript(result) {
+      const beatsHTML = result.beats.map((b,i) => `<article class="ai-beat ${i===3||i===4?'hot':''}" data-n="${String(i+1).padStart(2,'0')}"><b>${aiEscape(b[0])}</b><p>${aiEscape(b[1])}</p></article>`).join('');
+      const scenesHTML = result.scenes.map(s => `<article class="ai-scene"><div class="ai-scene-head"><b>${aiEscape(s.title)}</b><span>${aiEscape(s.tag)}</span></div><p>${aiEscape(s.text)}</p></article>`).join('');
+      const commentsHTML = result.comments.map(c => `<span class="ai-comment">${aiEscape(c)}</span>`).join('');
+      aiResult.innerHTML = `
+        <div class="ai-result-kicker">GENERATED SAMPLE · ${aiEscape(result.theme)} · ${aiEscape(result.intensityLabel)}</div>
+        <h3>${aiEscape(result.title)}</h3>
+        <p class="ai-logline">${aiEscape(result.logline)}</p>
+        <section class="ai-block">
+          <div class="ai-block-title"><b>八步爽点结构</b><span>对应本项目“爽点生产线”模型</span></div>
+          <div class="ai-beat-grid">${beatsHTML}</div>
+        </section>
+        <section class="ai-block">
+          <div class="ai-block-title"><b>六场短剧示例</b><span>受辱 → 蓄力 → 打脸 → 清算 → 补偿 → 钩子</span></div>
+          <div class="ai-scene-list">${scenesHTML}</div>
+        </section>
+        <section class="ai-block">
+          <div class="ai-block-title"><b>预期评论反馈</b><span>用于展示情绪验证逻辑，并非真实预测</span></div>
+          <div class="ai-comment-row">${commentsHTML}</div>
+        </section>
+        <div class="ai-hook"><b>下一集钩子：</b>${aiEscape(result.hook)}</div>
+        <p class="ai-result-disclaimer">本结果是基于本项目研究结论生成的课堂展示示例，用于呈现“爽点如何被结构化生产”，不代表真实平台数据预测或完整商业剧本。</p>`;
+      aiResult.classList.add('show');
+      aiStatusText.textContent = '生成完成';
+      aiStatusDot.classList.add('ready');
+      aiCopy.disabled = false;
+      aiRegenerate.disabled = false;
+    }
+
+    async function runAIGeneration(forceNew=false) {
+      const raw = aiPrompt.value.trim();
+      if (!raw) {
+        aiPrompt.focus();
+        aiPrompt.style.borderColor = '#e98f84';
+        setTimeout(() => aiPrompt.style.borderColor = '', 700);
+        return;
+      }
+      if (forceNew) aiAttempt += 1;
+      aiGenerate.disabled = true;
+      aiCopy.disabled = true;
+      aiRegenerate.disabled = true;
+      aiEmpty.style.display = 'none';
+      aiResult.classList.remove('show');
+      aiThinking.classList.add('active');
+      aiStatusText.textContent = '正在生成';
+      aiStatusDot.classList.remove('ready');
+      await new Promise(resolve => setTimeout(resolve, 760));
+      lastAIResult = buildLocalAIScript(raw, aiGenre.value, Number(aiIntensity.value), aiAttempt);
+      aiThinking.classList.remove('active');
+      renderAIScript(lastAIResult);
+      aiGenerate.disabled = false;
+    }
+
+    aiIntensity.addEventListener('input', () => aiIntensityValue.textContent = `${aiIntensity.value} / 5`);
+    document.querySelectorAll('[data-ai-preset]').forEach(btn => btn.addEventListener('click', () => {
+      aiPrompt.value = btn.dataset.aiPreset;
+      aiPrompt.focus();
+    }));
+    aiScriptForm.addEventListener('submit', e => { e.preventDefault(); aiAttempt = 0; runAIGeneration(false); });
+    aiRegenerate.addEventListener('click', () => runAIGeneration(true));
+    aiRandom.addEventListener('click', () => {
+      aiPrompt.value = inspirationPool[Math.floor(Math.random() * inspirationPool.length)];
+      aiGenre.value = 'auto';
+      aiIntensity.value = String(3 + Math.floor(Math.random() * 3));
+      aiIntensityValue.textContent = `${aiIntensity.value} / 5`;
+      aiAttempt = 0;
+      runAIGeneration(false);
+    });
+    aiCopy.addEventListener('click', async () => {
+      if (!lastAIResult) return;
+      const text = aiResult.innerText;
+      try {
+        await navigator.clipboard.writeText(text);
+        aiCopy.textContent = '已复制';
+      } catch (e) {
+        const area = document.createElement('textarea');
+        area.value = text; document.body.appendChild(area); area.select(); document.execCommand('copy'); area.remove();
+        aiCopy.textContent = '已复制';
+      }
+      setTimeout(() => aiCopy.textContent = '复制结果', 1200);
+    });
+
+  </script>
+</body>
+</html>
